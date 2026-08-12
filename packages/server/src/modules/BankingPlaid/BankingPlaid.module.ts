@@ -5,7 +5,6 @@ import { Module } from '@nestjs/common';
 import { SocketModule } from '../Socket/Socket.module';
 import { PlaidUpdateTransactionsOnItemCreatedSubscriber } from './subscribers/PlaidUpdateTransactionsOnItemCreatedSubscriber';
 import { PlaidUpdateTransactions } from './command/PlaidUpdateTransactions';
-import { PlaidSyncDb } from './command/PlaidSyncDB';
 import { PlaidWebooks } from './command/PlaidWebhooks';
 import { PlaidLinkTokenService } from './queries/GetPlaidLinkToken.service';
 import { PlaidApplication } from './PlaidApplication';
@@ -27,6 +26,7 @@ import { PlaidFetchTransactionsProcessor } from './jobs/PlaidFetchTransactionsJo
 import { PlaidWebhookVerificationService } from './PlaidWebhookVerification.service';
 import { BankingTransactionsRegonizeModule } from '../BankingTranasctionsRegonize/BankingTransactionsRegonize.module';
 import { RecognizeSyncedBankTranasctionsSubscriber } from './subscribers/RecognizeSyncedBankTransactions.subscriber';
+import { BankingFeedsModule } from '../BankingFeeds/BankingFeeds.module';
 
 const models = [RegisterTenancyModel(PlaidItem)];
 
@@ -39,6 +39,7 @@ const models = [RegisterTenancyModel(PlaidItem)];
     BankingCategorizeModule,
     BankingTransactionsModule,
     BankingTransactionsRegonizeModule,
+    BankingFeedsModule,
     BullModule.registerQueue({
       name: UpdateBankingPlaidTransitionsQueueJob,
       defaultJobOptions: {
@@ -56,7 +57,6 @@ const models = [RegisterTenancyModel(PlaidItem)];
     InjectSystemModel(SystemPlaidItem),
     PlaidItemService,
     PlaidUpdateTransactions,
-    PlaidSyncDb,
     PlaidWebooks,
     PlaidLinkTokenService,
     PlaidApplication,

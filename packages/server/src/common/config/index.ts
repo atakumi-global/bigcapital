@@ -5,6 +5,7 @@ import tenantDatabase from './tenant-database';
 import signup from './signup';
 import gotenberg from './gotenberg';
 import plaid from './plaid';
+import wise from './wise';
 import lemonsqueezy from './lemonsqueezy';
 import s3 from './s3';
 import openExchange from './open-exchange';
@@ -32,6 +33,7 @@ export const config = [
   signup,
   gotenberg,
   plaid,
+  wise,
   lemonsqueezy,
   s3,
   openExchange,

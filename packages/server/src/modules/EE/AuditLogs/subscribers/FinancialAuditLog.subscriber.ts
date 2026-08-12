@@ -140,9 +140,9 @@ import {
 import { IUncategorizedTransactionCreatedEventPayload } from '@/modules/BankingCategorize/types/BankingCategorize.types';
 import {
   IPlaidItemCreatedEventPayload,
-  IPlaidTransactionsSyncedEventPayload,
   IPlaidWebhookReceivedEventPayload,
 } from '@/modules/BankingPlaid/types/BankingPlaid.types';
+import { IBankFeedTransactionsSyncedEventPayload } from '@/modules/BankingFeeds/BankFeedProvider.types';
 import {
   IBankTransactionExcludedEventPayload,
   IBankTransactionUnexcludedEventPayload,
@@ -1315,19 +1315,24 @@ export class FinancialAuditLogSubscriber {
         payee: uncategorizedTransaction.payee,
         description: uncategorizedTransaction.description,
         plaidTransactionId: uncategorizedTransaction.plaidTransactionId,
+        bankFeedProvider: uncategorizedTransaction.bankFeedProvider,
+        bankFeedProviderTransactionId:
+          uncategorizedTransaction.bankFeedProviderTransactionId,
       },
     );
   }
 
-  // --- Plaid Sync Events ---
-  @OnEvent(events.plaid.onTransactionsSynced)
-  async onPlaidTransactionsSynced({
-    plaidAccountId,
+  // --- Bank Feed Sync Events ---
+  @OnEvent(events.bankFeed.onTransactionsSynced)
+  async onBankFeedTransactionsSynced({
+    provider,
+    providerAccountId,
     batch,
     trx,
-  }: IPlaidTransactionsSyncedEventPayload) {
-    await this.write(trx, 'synced', 'PlaidTransactions', null, {
-      plaidAccountId,
+  }: IBankFeedTransactionsSyncedEventPayload) {
+    await this.write(trx, 'synced', 'BankFeedTransactions', null, {
+      provider,
+      providerAccountId,
       batch,
     });
   }

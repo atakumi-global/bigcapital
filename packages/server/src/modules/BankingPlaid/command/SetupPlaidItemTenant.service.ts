@@ -1,6 +1,7 @@
 import { ClsService } from 'nestjs-cls';
 import { Inject, Injectable } from '@nestjs/common';
-import { SystemPlaidItem } from '../models/SystemPlaidItem';
+import { SystemBankFeedItem } from '../../BankingFeeds/models/SystemBankFeedItem';
+import { BankFeedProvider } from '../../BankingFeeds/BankFeedProvider.types';
 import { TenantModel } from '@/modules/System/models/TenantModel';
 import { SystemUser } from '@/modules/System/models/SystemUser';
 
@@ -9,8 +10,8 @@ export class SetupPlaidItemTenantService {
   constructor(
     private readonly clsService: ClsService,
 
-    @Inject(SystemPlaidItem.name)
-    private readonly systemPlaidItemModel: typeof SystemPlaidItem,
+    @Inject(SystemBankFeedItem.name)
+    private readonly systemBankFeedItemModel: typeof SystemBankFeedItem,
 
     @Inject(TenantModel.name)
     private readonly tenantModel: typeof TenantModel,
@@ -26,16 +27,17 @@ export class SetupPlaidItemTenantService {
    * @returns {Promise<void>}
    */
   public async setupPlaidTenant(plaidItemId: string, callback: () => void) {
-    const plaidItem = await this.systemPlaidItemModel
-      .query()
-      .findOne({ plaidItemId });
+    const bankFeedItem = await this.systemBankFeedItemModel.query().findOne({
+      provider: BankFeedProvider.Plaid,
+      providerItemId: plaidItemId,
+    });
 
-    if (!plaidItem) {
+    if (!bankFeedItem) {
       throw new Error('Plaid item not found');
     }
     const tenant = await this.tenantModel
       .query()
-      .findOne({ id: plaidItem.tenantId })
+      .findOne({ id: bankFeedItem.tenantId })
       .throwIfNotFound();
 
     const user = await this.systemUserModel

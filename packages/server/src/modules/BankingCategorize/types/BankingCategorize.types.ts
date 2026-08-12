@@ -57,8 +57,15 @@ export interface CreateUncategorizedTransactionDTO {
   payee?: string;
   description?: string;
   referenceNo?: string | null;
+
+  /** @deprecated Use bankFeedProviderTransactionId. */
   plaidTransactionId?: string | null;
   pending?: boolean;
+  /** @deprecated Use pendingBankFeedProviderTransactionId. */
   pendingPlaidTransactionId?: string | null;
+
+  bankFeedProvider?: string;
+  bankFeedProviderTransactionId?: string | null;
+  pendingBankFeedProviderTransactionId?: string | null;
   batch?: string;
 }

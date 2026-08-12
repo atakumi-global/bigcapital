@@ -16,7 +16,11 @@ export class BankAccount extends TenantBaseModel {
   public bankBalance!: number;
   public lastFeedsUpdatedAt!: string | null;
   public amount!: number;
+  /** @deprecated Use bankFeedProviderItemId. */
   public plaidItemId!: number;
+  public bankFeedProvider!: string | null;
+  public bankFeedProviderItemId!: string | null;
+  public bankFeedProviderAccountId!: string | null;
 
   public plaidItem!: PlaidItem;
 

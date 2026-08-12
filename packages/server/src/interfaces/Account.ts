@@ -13,8 +13,15 @@ export interface IAccountDTO {
 
 export interface IAccountCreateDTO extends IAccountDTO {
   currencyCode?: string;
+
+  /** @deprecated Use bankFeedProviderAccountId. */
   plaidAccountId?: string;
+  /** @deprecated Use bankFeedProviderItemId. */
   plaidItemId?: string;
+
+  bankFeedProvider?: string;
+  bankFeedProviderItemId?: string;
+  bankFeedProviderAccountId?: string;
 }
 
 export type IAccountEditDTO = IAccountDTO;
@@ -37,7 +44,11 @@ export interface IAccount {
   accountNormal: string;
   accountParentType: string;
   bankBalance: string;
+  /** @deprecated Use bankFeedProviderItemId. */
   plaidItemId: number | null;
+  bankFeedProvider?: string | null;
+  bankFeedProviderItemId?: string | null;
+  bankFeedProviderAccountId?: string | null;
   lastFeedsUpdatedAt: Date;
 }
 

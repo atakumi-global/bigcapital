@@ -1,4 +1,5 @@
-FROM bigcapitalhq/server:latest as build
+ARG SERVER_IMAGE=bigcapitalhq/server:latest
+FROM ${SERVER_IMAGE} AS build
 
 ARG DB_HOST= \
   DB_USER= \

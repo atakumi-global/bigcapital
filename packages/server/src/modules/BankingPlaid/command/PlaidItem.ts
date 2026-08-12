@@ -9,6 +9,9 @@ import { TenancyContext } from '@/modules/Tenancy/TenancyContext.service';
 import { IPlaidItemCreatedEventPayload } from '../types/BankingPlaid.types';
 import { TenantModelProxy } from '@/modules/System/models/TenantBaseModel';
 import { PlaidItemDto } from '../dtos/PlaidItem.dto';
+import { BankFeedItem } from '../../BankingFeeds/models/BankFeedItem';
+import { SystemBankFeedItem } from '../../BankingFeeds/models/SystemBankFeedItem';
+import { BankFeedProvider } from '../../BankingFeeds/BankFeedProvider.types';
 
 @Injectable()
 export class PlaidItemService {
@@ -21,6 +24,12 @@ export class PlaidItemService {
 
     @Inject(PlaidItem.name)
     private readonly plaidItemModel: TenantModelProxy<typeof PlaidItem>,
+
+    @Inject(BankFeedItem.name)
+    private readonly bankFeedItemModel: TenantModelProxy<typeof BankFeedItem>,
+
+    @Inject(SystemBankFeedItem.name)
+    private readonly systemBankFeedItemModel: typeof SystemBankFeedItem,
 
     @Inject(PLAID_CLIENT)
     private readonly plaidClient: PlaidApi,
@@ -45,15 +54,30 @@ export class PlaidItemService {
     const plaidAccessToken = response.data.access_token;
     const plaidItemId = response.data.item_id;
 
-    // Store the Plaid item metadata on tenant scope.
-    const _plaidItem = await this.plaidItemModel().query().insertAndFetch({
+    // Store the Plaid item metadata on tenant scope (legacy Plaid table).
+    await this.plaidItemModel().query().insert({
       tenantId,
       plaidAccessToken,
       plaidItemId,
       plaidInstitutionId: institutionId,
     });
-    // Stores the Plaid item id on system scope.
+    // Store the provider-neutral item metadata on tenant scope.
+    await this.bankFeedItemModel().query().insert({
+      tenantId,
+      provider: BankFeedProvider.Plaid,
+      providerItemId: plaidItemId,
+      providerInstitutionId: institutionId,
+      accessToken: plaidAccessToken,
+    });
+
+    // Stores the Plaid item id on system scope (legacy Plaid table).
     await this.systemPlaidItemModel.query().insert({ tenantId, plaidItemId });
+    // Stores the provider-neutral item id on system scope for webhook tenant resolution.
+    await this.systemBankFeedItemModel.query().insert({
+      tenantId,
+      provider: BankFeedProvider.Plaid,
+      providerItemId: plaidItemId,
+    });
 
     // Triggers `onPlaidItemCreated` event.
     await this.eventEmitter.emitAsync(events.plaid.onItemCreated, {

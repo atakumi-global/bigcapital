@@ -688,6 +688,11 @@ export const events = {
     onWebhookReceived: 'onPlaidWebhookReceived',
   },
 
+  bankFeed: {
+    onItemCreated: 'onBankFeedItemCreated',
+    onTransactionsSynced: 'onBankFeedTransactionsSynced',
+  },
+
   // Bank rules.
   bankRules: {
     onCreating: 'onBankRuleCreating',

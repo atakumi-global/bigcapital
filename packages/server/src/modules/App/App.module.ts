@@ -82,7 +82,7 @@ import { PaymentLinksModule } from '../PaymentLinks/PaymentLinks.module';
 import { RolesModule } from '../Roles/Roles.module';
 import { SubscriptionModule } from '../Subscription/Subscription.module';
 import { OrganizationModule } from '../Organization/Organization.module';
-import { WorkspacesModule } from '../ee/Workspaces/Workspaces.module';
+import { WorkspacesModule } from '../EE/Workspaces/Workspaces.module';
 import { TenantDBManagerModule } from '../TenantDBManager/TenantDBManager.module';
 import { PaymentServicesModule } from '../PaymentServices/PaymentServices.module';
 import { AuthModule } from '../Auth/Auth.module';
@@ -100,6 +100,7 @@ import { MiscellaneousModule } from '../Miscellaneous/Miscellaneous.module';
 import { UsersModule } from '../UsersModule/Users.module';
 import { ContactsModule } from '../Contacts/Contacts.module';
 import { BankingPlaidModule } from '../BankingPlaid/BankingPlaid.module';
+import { BankingWiseModule } from '../BankingWise/BankingWise.module';
 import { BankingCategorizeModule } from '../BankingCategorize/BankingCategorize.module';
 import { ExchangeRatesModule } from '../ExchangeRates/ExchangeRates.module';
 import { TenantModelsInitializeModule } from '../Tenancy/TenantModelsInitialize.module';
@@ -231,6 +232,7 @@ import { AppThrottleModule } from './AppThrottle.module';
     BankingTransactionsModule,
     BankingMatchingModule,
     BankingPlaidModule,
+    BankingWiseModule,
     BankingCategorizeModule,
     TransactionsLockingModule,
     SettingsModule,

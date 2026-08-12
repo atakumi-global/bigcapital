@@ -4,13 +4,13 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { events } from '@/common/events/events';
 import { runAfterTransaction } from '@/modules/Tenancy/TenancyDB/TransactionsHooks';
-import { IPlaidTransactionsSyncedEventPayload } from '../types/BankingPlaid.types';
 import {
   RecognizeUncategorizedTransactionsJob,
   RecognizeUncategorizedTransactionsJobPayload,
   RecognizeUncategorizedTransactionsQueue,
 } from '@/modules/BankingTranasctionsRegonize/_types';
 import { TenancyContext } from '@/modules/Tenancy/TenancyContext.service';
+import { IBankFeedTransactionsSyncedEventPayload } from '../../BankingFeeds/BankFeedProvider.types';
 
 @Injectable()
 export class RecognizeSyncedBankTranasctionsSubscriber {
@@ -22,15 +22,15 @@ export class RecognizeSyncedBankTranasctionsSubscriber {
   ) {}
 
   /**
-   * Triggers the recognize transactions job once the Plaid transactions synced
-   * and the current transaction committed.
-   * @param {IPlaidTransactionsSyncedEventPayload} payload - Event payload.
+   * Triggers the recognize transactions job once the bank feed transactions
+   * synced and the current transaction committed.
+   * @param {IBankFeedTransactionsSyncedEventPayload} payload - Event payload.
    */
-  @OnEvent(events.plaid.onTransactionsSynced)
+  @OnEvent(events.bankFeed.onTransactionsSynced)
   public async handleRecognizeSyncedBankTransactions({
     batch,
     trx,
-  }: IPlaidTransactionsSyncedEventPayload) {
+  }: IBankFeedTransactionsSyncedEventPayload) {
     runAfterTransaction(trx, async () => {
       const tenantPayload = await this.tenancyContext.getTenantJobPayload();
       const payload = {

@@ -1,4 +1,10 @@
-import { IsBoolean, IsDateString, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UncategorizedBankTransactionDto {
   @IsDateString()
@@ -30,6 +36,18 @@ export class UncategorizedBankTransactionDto {
 
   @IsString()
   pendingPlaidTransactionId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  bankFeedProvider?: string;
+
+  @IsOptional()
+  @IsString()
+  bankFeedProviderTransactionId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  pendingBankFeedProviderTransactionId?: string | null;
 
   @IsString()
   batch?: string;

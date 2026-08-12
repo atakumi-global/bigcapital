@@ -92,6 +92,34 @@ export class CreateAccountDTO {
     description: 'Plaid item ID for syncing',
     example: 'plaid_item_123456',
     required: false,
+    deprecated: true,
   })
   plaidItemId?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    description: 'Bank feed provider for syncing',
+    example: 'plaid',
+    required: false,
+  })
+  bankFeedProvider?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    description: 'Bank feed provider item ID for syncing',
+    example: 'plaid_item_123456',
+    required: false,
+  })
+  bankFeedProviderItemId?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    description: 'Bank feed provider account ID for syncing',
+    example: 'plaid_account_123456',
+    required: false,
+  })
+  bankFeedProviderAccountId?: string;
 }

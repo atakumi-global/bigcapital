@@ -1,7 +1,5 @@
 import { Knex } from 'knex';
-import { PlaidSyncDb } from './PlaidSyncDB';
 import { PlaidFetchedTransactionsUpdates } from '../types/BankingPlaid.types';
-import { PlaidItem } from '../models/PlaidItem';
 import { Inject, Injectable } from '@nestjs/common';
 import { UnitOfWork } from '@/modules/Tenancy/TenancyDB/UnitOfWork.service';
 import {
@@ -12,18 +10,25 @@ import {
 } from 'plaid';
 import { PLAID_CLIENT } from '@/modules/Plaid/Plaid.module';
 import { TenantModelProxy } from '@/modules/System/models/TenantBaseModel';
+import { BankFeedSyncDb } from '../../BankingFeeds/BankFeedSyncDb';
+import { BankFeedProvider } from '../../BankingFeeds/BankFeedProvider.types';
+import { PlaidItem } from '../models/PlaidItem';
+import {
+  transformPlaidAccountToCreateAccount,
+  transformPlaidTrxToBankFeedTransaction,
+} from '../utils';
 
 @Injectable()
 export class PlaidUpdateTransactions {
   /**
    * Constructor method.
-   * @param {PlaidSyncDb} plaidSync - Plaid sync service.
+   * @param {BankFeedSyncDb} bankFeedSync - Provider-neutral bank feed sync service.
    * @param {UnitOfWork} uow - Unit of work.
    * @param {TenantModelProxy<typeof PlaidItem>} plaidItemModel - Plaid item model.
    * @param {PlaidApi} plaidClient - Plaid client.
    */
   constructor(
-    private readonly plaidSync: PlaidSyncDb,
+    private readonly bankFeedSync: BankFeedSyncDb,
     private readonly uow: UnitOfWork,
 
     @Inject(PlaidItem.name)
@@ -94,21 +99,49 @@ export class PlaidUpdateTransactions {
       institution_id: item.institution_id,
       country_codes: [CountryCode.Us, CountryCode.Gb],
     });
+
+    const createBankAccountDTOs = accounts.map((account) =>
+      transformPlaidAccountToCreateAccount(item, institution, account),
+    );
+    const bankFeedTransactions = added
+      .concat(modified)
+      .map(transformPlaidTrxToBankFeedTransaction);
+
     // Sync bank accounts.
-    await this.plaidSync.syncBankAccounts(accounts, institution, item, trx);
+    await this.bankFeedSync.syncBankAccounts(createBankAccountDTOs, trx);
     // Sync removed transactions.
-    await this.plaidSync.syncRemoveTransactions(
-      removed?.map((r) => r.transaction_id),
+    await this.bankFeedSync.syncRemoveTransactions(
+      BankFeedProvider.Plaid,
+      removed?.map((r) => r.transaction_id) || [],
       trx,
     );
     // Sync bank account transactions.
-    await this.plaidSync.syncAccountsTransactions(added.concat(modified), trx);
+    await this.bankFeedSync.syncAccountsTransactions(
+      BankFeedProvider.Plaid,
+      bankFeedTransactions,
+      trx,
+    );
     // Sync transactions cursor.
-    await this.plaidSync.syncTransactionsCursor(plaidItemId, cursor, trx);
+    await this.bankFeedSync.syncTransactionsCursor(
+      BankFeedProvider.Plaid,
+      plaidItemId,
+      cursor,
+      undefined,
+      trx,
+    );
     // Update the last feeds updated at of the updated accounts.
-    await this.plaidSync.updateLastFeedsUpdatedAt(plaidAccountsIds, trx);
+    await this.bankFeedSync.updateLastFeedsUpdatedAt(
+      BankFeedProvider.Plaid,
+      plaidAccountsIds,
+      trx,
+    );
     // Turn on the accounts feeds flag.
-    await this.plaidSync.updateAccountsFeedsActive(plaidAccountsIds, true, trx);
+    await this.bankFeedSync.updateAccountsFeedsActive(
+      BankFeedProvider.Plaid,
+      plaidAccountsIds,
+      true,
+      trx,
+    );
 
     return {
       addedCount: added.length,

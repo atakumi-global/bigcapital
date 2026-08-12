@@ -13,7 +13,11 @@ export class UncategorizedBankTransaction extends TenantBaseModel {
   readonly referenceNo!: string;
   readonly payee!: string;
   readonly description!: string;
+  /** @deprecated Use bankFeedProviderTransactionId. */
   readonly plaidTransactionId!: string;
+  readonly bankFeedProvider!: string;
+  readonly bankFeedProviderTransactionId!: string;
+  readonly pendingBankFeedProviderTransactionId!: string;
   readonly recognizedTransactionId!: number;
   readonly excludedAt: Date;
   readonly pending: boolean;
