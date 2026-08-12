@@ -147,6 +147,8 @@ import { AppThrottleModule } from './AppThrottle.module';
         connection: {
           host: configService.get('queue.host'),
           port: configService.get('queue.port'),
+          password: configService.get('queue.password'),
+          db: configService.get('queue.db'),
         },
       }),
       inject: [ConfigService],
@@ -186,6 +188,8 @@ import { AppThrottleModule } from './AppThrottle.module';
         config: {
           host: configService.get('redis.host'),
           port: configService.get('redis.port'),
+          password: configService.get('redis.password'),
+          db: configService.get('redis.db'),
         },
       }),
       inject: [ConfigService],

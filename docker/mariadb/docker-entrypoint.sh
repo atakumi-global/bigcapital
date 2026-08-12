@@ -13,6 +13,11 @@ fi
 if [ -n "$MYSQL_DATABASE" ]; then
     sed -i "s/{MYSQL_DATABASE}/$MYSQL_DATABASE/g" /scripts/init.sql
 fi
+if [ -n "$TENANT_DB_PREFIX" ]; then
+    # Escape underscores so they match literally in the GRANT wildcard.
+    ESCAPED_PREFIX=$(echo "$TENANT_DB_PREFIX" | sed 's/_/\\\\_/g')
+    sed -i "s/{TENANT_DB_PREFIX}/$ESCAPED_PREFIX/g" /scripts/init.sql
+fi
 
 # Execute SQL file
-mysql -u root -p$MYSQL_ROOT_PASSWORD < /scripts/init.sql
+mariadb -u root -p$MYSQL_ROOT_PASSWORD < /scripts/init.sql

@@ -1,4 +1,4 @@
-FROM mariadb:10.2
+FROM mariadb:10.11
 
 USER root
 ADD my.cnf /etc/mysql/conf.d/my.cnf
@@ -22,5 +22,5 @@ COPY ./docker-entrypoint.sh /docker-entrypoint-initdb.d/docker-initialize.sh
 RUN chown -R mysql:root /docker-entrypoint-initdb.d
 RUN chown -R mysql:root /scripts
 
-CMD ["mysqld"]
+CMD ["mariadbd"]
 EXPOSE 3306
