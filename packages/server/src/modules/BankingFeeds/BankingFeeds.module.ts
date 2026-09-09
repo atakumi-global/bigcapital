@@ -7,6 +7,7 @@ import { BankingTransactionsModule } from '../BankingTransactions/BankingTransac
 import { BankFeedItem } from './models/BankFeedItem';
 import { SystemBankFeedItem } from './models/SystemBankFeedItem';
 import { BankFeedSyncDb } from './BankFeedSyncDb';
+import { SetupBankFeedItemTenantService } from './SetupBankFeedItemTenant.service';
 
 const tenantModels = [RegisterTenancyModel(BankFeedItem)];
 const systemModels = [InjectSystemModel(SystemBankFeedItem)];
@@ -18,7 +19,12 @@ const systemModels = [InjectSystemModel(SystemBankFeedItem)];
     BankingTransactionsModule,
     ...tenantModels,
   ],
-  providers: [...systemModels, BankFeedSyncDb],
-  exports: [...tenantModels, SystemBankFeedItem.name, BankFeedSyncDb],
+  providers: [...systemModels, BankFeedSyncDb, SetupBankFeedItemTenantService],
+  exports: [
+    ...tenantModels,
+    SystemBankFeedItem.name,
+    BankFeedSyncDb,
+    SetupBankFeedItemTenantService,
+  ],
 })
 export class BankingFeedsModule {}

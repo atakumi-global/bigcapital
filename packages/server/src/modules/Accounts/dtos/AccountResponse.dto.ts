@@ -116,6 +116,12 @@ export class AccountResponseDto {
   plaidAccountId: string | null;
 
   @ApiProperty({
+    description: 'The bank feed provider of the account (plaid, wise)',
+    example: 'plaid',
+  })
+  bankFeedProvider: string | null;
+
+  @ApiProperty({
     description: 'Whether the feeds are active',
     example: true,
   })

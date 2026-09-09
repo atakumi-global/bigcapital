@@ -22,6 +22,12 @@ const UncategorizeTransactionsBulkAlert: LazyExoticComponent<ComponentType> =
     })),
   );
 
+const WiseDisconnectAlertLazy: LazyExoticComponent<ComponentType> = lazy(() =>
+  import('./WiseDisconnectAlert').then((m) => ({
+    default: m.WiseDisconnectAlert,
+  })),
+);
+
 interface BankAccountAlertEntry {
   name: string;
   component: LazyExoticComponent<ComponentType>;
@@ -42,5 +48,9 @@ export const BankAccountAlerts: BankAccountAlertEntry[] = [
   {
     name: 'uncategorize-transactions-bulk',
     component: UncategorizeTransactionsBulkAlert,
+  },
+  {
+    name: 'wise-disconnect-alert',
+    component: WiseDisconnectAlertLazy,
   },
 ];

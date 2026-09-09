@@ -4,14 +4,14 @@
 
 Bigcapital is a multi-tenant accounting SaaS. pnpm + Lerna monorepo (independent versioning).
 
-| Package | Path | Role |
-|---|---|---|
-| `@bigcapital/server` | `packages/server` | NestJS API + CLI. Multi-tenant with system DB + per-tenant DBs (MariaDB). Knex migrations, Objection.js ORM. |
-| `@bigcapital/webapp` | `packages/webapp` | React SPA. Vite, BlueprintJS, Redux, React Router v5. |
-| `@bigcapital/utils` | `shared/bigcapital-utils` | Shared utilities. tsup (CJS + ESM). |
-| `@bigcapital/pdf-templates` | `shared/pdf-templates` | PDF invoice/estimate templates. Webpack, Storybook. |
-| `@bigcapital/email-components` | `shared/email-components` | Email templates (react-email). Vite, Storybook. |
-| `@bigcapital/sdk-ts` | `shared/sdk-ts` | TypeScript client generated from OpenAPI spec. |
+| Package                        | Path                      | Role                                                                                                         |
+| ------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `@bigcapital/server`           | `packages/server`         | NestJS API + CLI. Multi-tenant with system DB + per-tenant DBs (MariaDB). Knex migrations, Objection.js ORM. |
+| `@bigcapital/webapp`           | `packages/webapp`         | React SPA. Vite, BlueprintJS, Redux, React Router v5.                                                        |
+| `@bigcapital/utils`            | `shared/bigcapital-utils` | Shared utilities. tsup (CJS + ESM).                                                                          |
+| `@bigcapital/pdf-templates`    | `shared/pdf-templates`    | PDF invoice/estimate templates. Webpack, Storybook.                                                          |
+| `@bigcapital/email-components` | `shared/email-components` | Email templates (react-email). Vite, Storybook.                                                              |
+| `@bigcapital/sdk-ts`           | `shared/sdk-ts`           | TypeScript client generated from OpenAPI spec.                                                               |
 
 ## Dev setup
 
@@ -27,27 +27,27 @@ Bigcapital is a multi-tenant accounting SaaS. pnpm + Lerna monorepo (independent
 
 Run from repo root unless noted.
 
-| What | Command |
-|---|---|
-| Install deps | `pnpm install` |
-| Start server (watch) | `pnpm run server:start` |
-| Start webapp (Vite, port 4000) | `pnpm run dev:webapp` |
-| Build server + shared deps | `pnpm run build:server` |
-| Build all shared packages | `pnpm run build:shared` |
-| Build everything | `pnpm run build` |
-| Typecheck all packages | `pnpm run typecheck` |
-| Lint all | `pnpm run lint` (fix) / `pnpm run lint:check` (check only) |
-| Format all | `pnpm run format` (fix) / `pnpm run format:check` (check only) |
-| System DB migrations | `pnpm run system:migrate:latest` |
-| Tenant DB migrations | `pnpm run tenants:migrate:latest` |
-| Make new system migration | `pnpm run system:migrate:make <name>` |
-| Make new tenant migration | `pnpm run tenants:migrate:make <name>` |
-| Seed system DB | `pnpm run system:seed:latest` |
-| Seed tenant DB | `pnpm run tenants:seed:latest` |
-| Regenerate SDK from OpenAPI | `pnpm run generate:sdk-types` |
-| Playwright e2e | `pnpm run e2e:webapp` |
-| Server unit tests | `cd packages/server && pnpm run test` |
-| Server e2e tests | `cd packages/server && pnpm run test:e2e` |
+| What                           | Command                                                        |
+| ------------------------------ | -------------------------------------------------------------- |
+| Install deps                   | `pnpm install`                                                 |
+| Start server (watch)           | `pnpm run server:start`                                        |
+| Start webapp (Vite, port 4000) | `pnpm run dev:webapp`                                          |
+| Build server + shared deps     | `pnpm run build:server`                                        |
+| Build all shared packages      | `pnpm run build:shared`                                        |
+| Build everything               | `pnpm run build`                                               |
+| Typecheck all packages         | `pnpm run typecheck`                                           |
+| Lint all                       | `pnpm run lint` (fix) / `pnpm run lint:check` (check only)     |
+| Format all                     | `pnpm run format` (fix) / `pnpm run format:check` (check only) |
+| System DB migrations           | `pnpm run system:migrate:latest`                               |
+| Tenant DB migrations           | `pnpm run tenants:migrate:latest`                              |
+| Make new system migration      | `pnpm run system:migrate:make <name>`                          |
+| Make new tenant migration      | `pnpm run tenants:migrate:make <name>`                         |
+| Seed system DB                 | `pnpm run system:seed:latest`                                  |
+| Seed tenant DB                 | `pnpm run tenants:seed:latest`                                 |
+| Regenerate SDK from OpenAPI    | `pnpm run generate:sdk-types`                                  |
+| Playwright e2e                 | `pnpm run e2e:webapp`                                          |
+| Server unit tests              | `cd packages/server && pnpm run test`                          |
+| Server e2e tests               | `cd packages/server && pnpm run test:e2e`                      |
 
 ## Key gotchas
 
@@ -101,6 +101,24 @@ Webapp (camelCase)  ←  SDK response middleware  ←  API wire (snake_case)  �
 - **PDF generation**: Gotenberg service (`:9000` in dev) using the server's `GET /public/` static files + pdf-templates.
 - **SDK generation**: `pnpm run generate:sdk-types` exports OpenAPI spec from server, generates TypeScript types via `openapi-typescript`, builds the SDK package. Run this after API schema changes.
 - **License**: AGPL for the open-source edition. Some modules under `modules/EE/` may be enterprise-only.
+
+## BankingWise (Wise bank feed)
+
+Wise bank-feed integration lives in three server modules:
+
+- `modules/Wise/` — HTTP layer. `WISE_CLIENT` DI token (axios instance, see `Wise.constants.ts`; token kept out of `Wise.module.ts` to avoid the client↔module circular import). `WiseClient` is the only place doing HTTP; maps 401/403 → `WiseAuthError`, 429 → `WiseRateLimitError`, 5xx → `WiseTransientError`.
+- `modules/BankingWise/` — provider (`WiseBankFeedProvider`), lifecycle API (`BankingWise.controller.ts` under `/api/banking/wise`: status/profiles/connect/sync/pause/resume/disconnect), sync engine (`command/WiseUpdateTransactions.ts`), queue processor, cron.
+- `modules/BankingFeeds/` — provider-neutral sync engine (`BankFeedSyncDb`), feed item models, `SetupBankFeedItemTenantService` (establishes tenant CLS from a system `bank_feed_items` row for jobs/cron).
+
+Key facts:
+
+- **Credentials are env-only** (`WISE_API_TOKEN`, `WISE_PROFILE_ID`, `WISE_API_BASE_URL`). One Wise connection per deployment; `bank_feed_items.access_token` stays `null`. Token must be **read-only**.
+- **Queue**: `update-banking-wise-transactions-queue`, job id `wise:{profileId}` (coalesces manual/cron triggers). Processor is `Scope.REQUEST` + `@UseCls()` + `SetupBankFeedItemTenantService.setupTenant('wise', …)`.
+- **Cron**: `WisePollTransactionsCron` every 6h (`0 */6 * * *`); only reads the system DB and enqueues — tenant CLS happens in the processor.
+- **Idempotency**: no unique index on the neutral transaction-id columns (pre-existing debt). Duplicates are filtered app-level in `WiseUpdateTransactions.filterExistingTransactions` before insert.
+- **Sync state**: per-balance cursors in `bank_feed_items.sync_state` (`{ profileId, balances: { [balanceId]: { currency, lastSyncedAt } } }`). First sync fetches 90 days; Wise statement window hard cap is 469 days.
+- **Test pattern**: pure mapper specs over JSON fixtures (`packages/server/test/fixtures/wise/`); `Test.createTestingModule().overrideProvider(WISE_CLIENT).useValue(fakeAxios)` for the client; hand-built query-builder mocks for services. No HTTP mocking libraries.
+- **Webapp**: `useWiseStatus` etc. in `packages/webapp/src/hooks/query/banking/queries/wise.ts`; `ConnectWiseDialog` (`DialogsName.ConnectWise`); `AccountTransactionsActionsBar` branches Plaid vs Wise actions on `currentAccount.bankFeedProvider`.
 
 ## PR workflow
 

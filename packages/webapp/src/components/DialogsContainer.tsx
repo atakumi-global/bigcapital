@@ -2,6 +2,7 @@ import { FeatureCan } from '@/components';
 import { Features } from '@/constants';
 import { DialogsName } from '@/constants/dialogs';
 import { RuleFormDialog } from '@/containers/Banking/Rules/RuleFormDialog/RuleFormDialog';
+import { ConnectWiseDialog } from '@/containers/Banking/Wise/ConnectWiseDialog';
 import { DisconnectBankAccountDialog } from '@/containers/CashFlow/AccountTransactions/dialogs/DisconnectBankAccountDialog/DisconnectBankAccountDialog';
 import { index as MoneyInDialog } from '@/containers/CashFlow/MoneyInDialog';
 import { index as MoneyOutDialog } from '@/containers/CashFlow/MoneyOutDialog';
@@ -120,6 +121,9 @@ export default function DialogsContainer() {
       <DisconnectBankAccountDialog
         dialogName={DialogsName.DisconnectBankAccountConfirmation}
       />
+      <FeatureCan feature={Features.BankSyncing}>
+        <ConnectWiseDialog dialogName={DialogsName.ConnectWise} />
+      </FeatureCan>
       <SharePaymentLinkDialog dialogName={DialogsName.SharePaymentLink} />
       <SelectPaymentMethodsDialog
         dialogName={DialogsName.SelectPaymentMethod}

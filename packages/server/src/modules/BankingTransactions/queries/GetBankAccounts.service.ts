@@ -43,6 +43,7 @@ export class GetBankAccountsService {
         ACCOUNT_TYPE.CREDIT_CARD,
       ]);
       builder.modify('inactiveMode', filter.inactiveMode);
+      builder.withGraphFetched('[plaidItem, bankFeedItem]');
     });
     // Retrieves the transformed accounts.
     const transformed = await this.transformer.transform(

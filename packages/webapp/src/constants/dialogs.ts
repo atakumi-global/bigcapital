@@ -84,6 +84,7 @@ export enum DialogsName {
   Export = 'Export',
   BankRuleForm = 'BankRuleForm',
   DisconnectBankAccountConfirmation = 'DisconnectBankAccountConfirmation',
+  ConnectWise = 'connect-wise',
   SharePaymentLink = 'SharePaymentLink',
   SelectPaymentMethod = 'SelectPaymentMethodsDialog',
   StripeSetup = 'StripeSetup',

@@ -1,0 +1,63 @@
+{
+  "accountHolder": { "type": "BUSINESS", "businessName": "Example Ltd" },
+  "issuer": { "name": "Wise" },
+  "query": {
+    "intervalStart": "2026-08-01T00:00:00.000Z",
+    "intervalEnd": "2026-09-01T00:00:00.000Z",
+    "type": "COMPACT"
+  },
+  "transactions": [
+    {
+      "type": "DEBIT",
+      "date": "2026-08-05T09:12:34.000Z",
+      "amount": { "value": -25.5, "currency": "EUR" },
+      "totalFees": { "value": 0, "currency": "EUR" },
+      "details": {
+        "type": "CARD",
+        "description": "Card payment to Coffee Shop",
+        "merchant": { "name": "Coffee Shop", "category": "cafe" },
+        "paymentReference": "POS 123456"
+      },
+      "exchangeDetails": null,
+      "runningBalance": { "value": 1494.92, "currency": "EUR" },
+      "referenceNumber": "CARD-REF-0001"
+    },
+    {
+      "type": "CREDIT",
+      "date": "2026-08-10T14:00:00.000Z",
+      "amount": { "value": 500.0, "currency": "EUR" },
+      "totalFees": { "value": 0, "currency": "EUR" },
+      "details": {
+        "type": "TRANSFER",
+        "description": "Invoice 1042 payment",
+        "senderName": "Acme GmbH",
+        "senderAccount": "DE00 1111 2222 3333 4444 55",
+        "paymentReference": "INV-1042"
+      },
+      "exchangeDetails": null,
+      "runningBalance": { "value": 1994.92, "currency": "EUR" },
+      "referenceNumber": "TRANSFER-REF-0002"
+    },
+    {
+      "type": "DEBIT",
+      "date": "2026-08-12T08:30:00.000Z",
+      "amount": { "value": -474.5, "currency": "EUR" },
+      "totalFees": { "value": 2.35, "currency": "EUR" },
+      "details": {
+        "type": "TRANSFER",
+        "description": "Sent money to Supplier Oy",
+        "recipient": {
+          "name": "Supplier Oy",
+          "account": "FI00 5555 4444 3333 22"
+        },
+        "paymentReference": "PO-778"
+      },
+      "exchangeDetails": {
+        "forAmount": { "value": 520.1, "currency": "USD" },
+        "rate": 0.9125
+      },
+      "runningBalance": { "value": 1520.42, "currency": "EUR" },
+      "referenceNumber": "TRANSFER-REF-0003"
+    }
+  ]
+}

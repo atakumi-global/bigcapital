@@ -85,7 +85,7 @@ services:
       - PLAID_SECRET=${PLAID_SECRET:-}
       - PLAID_LINK_WEBHOOK=${PLAID_LINK_WEBHOOK:-}
       - WISE_API_TOKEN=${WISE_API_TOKEN:-}
-      - WISE_API_BASE_URL=${WISE_API_BASE_URL:-https://api.wise.com}
+      - WISE_API_BASE_URL=${WISE_API_BASE_URL:-https://api.wise.com/2026Q3}
       - WISE_PROFILE_ID=${WISE_PROFILE_ID:-}
       - WISE_WEBHOOK_SECRET=${WISE_WEBHOOK_SECRET:-}
       - POSTHOG_API_KEY=${POSTHOG_API_KEY:-}
@@ -113,7 +113,12 @@ services:
   database_migration:
     image: bigcapital-fork-server
     working_dir: /app/packages/server
-    command: ["sh", "-c", "node dist/cli.js system:migrate:latest && node dist/cli.js tenants:migrate:latest"]
+    command:
+      [
+        "sh",
+        "-c",
+        "node dist/cli.js system:migrate:latest && node dist/cli.js tenants:migrate:latest",
+      ]
     environment:
       # Keep in sync with the Database block on server above.
       - DB_HOST=mysql
@@ -153,11 +158,16 @@ services:
       context: ./docker/redis
     environment:
       - REDIS_PASSWORD=${SERVICE_PASSWORD_REDIS}
-    command: ["sh", "-c", "redis-server /usr/local/etc/redis/redis.conf --requirepass \"$$REDIS_PASSWORD\""]
+    command:
+      [
+        "sh",
+        "-c",
+        'redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"',
+      ]
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
       interval: 10s
       timeout: 5s
       start_period: 10s

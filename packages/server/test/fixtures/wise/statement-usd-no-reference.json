@@ -1,0 +1,23 @@
+{
+  "accountHolder": { "type": "BUSINESS", "businessName": "Example Ltd" },
+  "issuer": { "name": "Wise" },
+  "query": {
+    "intervalStart": "2026-08-01T00:00:00.000Z",
+    "intervalEnd": "2026-09-01T00:00:00.000Z",
+    "type": "COMPACT"
+  },
+  "transactions": [
+    {
+      "type": "CREDIT",
+      "date": "2026-08-03T11:45:00.000Z",
+      "amount": { "value": 300.0, "currency": "USD" },
+      "totalFees": { "value": 0, "currency": "USD" },
+      "details": {
+        "type": "MONEY_ADDED",
+        "description": "Added money"
+      },
+      "exchangeDetails": null,
+      "runningBalance": { "value": 300.0, "currency": "USD" }
+    }
+  ]
+}

@@ -20,6 +20,10 @@ export class BankFeedItem extends BaseModel {
     return [];
   }
 
+  static get jsonAttributes() {
+    return ['syncState'];
+  }
+
   static get virtualAttributes() {
     return ['isPaused'];
   }

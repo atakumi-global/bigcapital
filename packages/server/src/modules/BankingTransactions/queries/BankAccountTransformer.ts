@@ -13,6 +13,7 @@ export class CashflowAccountTransformer extends Transformer {
       'lastFeedsUpdatedAtFormatted',
       'lastFeedsUpdatedFromNow',
       'uncategorizedTransactionsCount',
+      'isFeedsPaused',
     ];
   };
 
@@ -72,5 +73,17 @@ export class CashflowAccountTransformer extends Transformer {
    */
   protected uncategorizedTransactionsCount(account: Account): number {
     return account['uncategorizedTransactions'] || 0;
+  }
+
+  /**
+   * Detarmines whether the bank account connection is paused. Provider-neutral:
+   * checks the legacy Plaid item and the provider-neutral bank feed item.
+   * @param {Account} account
+   * @returns {boolean}
+   */
+  protected isFeedsPaused(account: Account): boolean {
+    return (
+      account.plaidItem?.isPaused || account.bankFeedItem?.isPaused || false
+    );
   }
 }

@@ -75,8 +75,8 @@ export interface IBankFeedTransactionsSyncedEventPayload {
 export interface BankFeedProviderClient {
   readonly provider: BankFeedProvider;
 
-  createConnectLink(ctx: BankFeedConnectContext): Promise<any>;
-  exchangeConnectToken(
+  createConnectLink?(ctx: BankFeedConnectContext): Promise<any>;
+  exchangeConnectToken?(
     dto: any,
     ctx: BankFeedConnectContext,
   ): Promise<{

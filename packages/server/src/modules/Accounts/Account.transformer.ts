@@ -27,7 +27,7 @@ export class AccountTransformer extends Transformer {
    * @returns {string[]}
    */
   public excludeAttributes = (): string[] => {
-    return ['plaidItem'];
+    return ['plaidItem', 'bankFeedItem'];
   };
 
   /**
@@ -80,12 +80,15 @@ export class AccountTransformer extends Transformer {
   };
 
   /**
-   * Detarmines whether the bank account connection is paused.
+   * Detarmines whether the bank account connection is paused. Provider-neutral:
+   * checks the legacy Plaid item and the provider-neutral bank feed item.
    * @param account
    * @returns {boolean}
    */
   protected isFeedsPaused = (account: Account): boolean => {
-    return account.plaidItem?.isPaused || false;
+    return (
+      account.plaidItem?.isPaused || account.bankFeedItem?.isPaused || false
+    );
   };
 
   /**

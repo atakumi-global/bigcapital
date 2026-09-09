@@ -78,6 +78,10 @@ function CashFlowAccountsActionsBarInner({
   const handleConnectToBank = () => {
     openPlaidAsync();
   };
+  // Handle connect Wise button click.
+  const handleConnectWise = () => {
+    openDialog(DialogsName.ConnectWise);
+  };
 
   return (
     <DashboardActionsBar>
@@ -120,6 +124,13 @@ function CashFlowAccountsActionsBarInner({
             icon={<CreditCard2Icon />}
             onClick={handleConnectToBank}
             disabled={isPlaidLoading}
+          />
+          <Button
+            className={Classes.MINIMAL}
+            text={'Connect Wise'}
+            icon={<CreditCard2Icon />}
+            onClick={handleConnectWise}
+            data-testId={'wise-connect-button'}
           />
           <NavbarDivider />
         </FeatureCan>

@@ -67,6 +67,23 @@ export class CreateUncategorizedTransactionService {
               accountId: createUncategorizedTransactionDTO.accountId,
             })
             .throwIfNotFound();
+        } else if (
+          this.isDuplicateBankFeedTransactionError(
+            error,
+            createUncategorizedTransactionDTO,
+          )
+        ) {
+          // Same recovery for the provider-neutral transaction ids (e.g. Wise).
+          uncategorizedTransaction = await this.uncategorizedBankTransaction()
+            .query(trx)
+            .findOne({
+              bankFeedProvider:
+                createUncategorizedTransactionDTO.bankFeedProvider,
+              bankFeedProviderTransactionId:
+                createUncategorizedTransactionDTO.bankFeedProviderTransactionId,
+              accountId: createUncategorizedTransactionDTO.accountId,
+            })
+            .throwIfNotFound();
         } else {
           throw error;
         }
@@ -97,6 +114,27 @@ export class CreateUncategorizedTransactionService {
   ): boolean {
     return (
       !!createDTO.plaidTransactionId &&
+      error?.code === 'ER_DUP_ENTRY' &&
+      error?.errno === 1062
+    );
+  }
+
+  /**
+   * Determines whether the given error is a duplicate key violation on the
+   * provider-neutral transaction id columns for the given create DTO. Only
+   * applies to non-Plaid providers; the Plaid branch above stays untouched.
+   * @param {any} error - The insert error.
+   * @param {UncategorizedBankTransactionDto} createDTO - Create DTO.
+   * @returns {boolean}
+   */
+  private isDuplicateBankFeedTransactionError(
+    error: any,
+    createDTO: UncategorizedBankTransactionDto,
+  ): boolean {
+    return (
+      !createDTO.plaidTransactionId &&
+      !!createDTO.bankFeedProvider &&
+      !!createDTO.bankFeedProviderTransactionId &&
       error?.code === 'ER_DUP_ENTRY' &&
       error?.errno === 1062
     );

@@ -15147,6 +15147,121 @@
         ]
       }
     },
+    "/api/banking/wise/status": {
+      "get": {
+        "operationId": "BankingWiseController_getStatus",
+        "summary": "Get the Wise integration status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/profiles": {
+      "get": {
+        "operationId": "BankingWiseController_getProfiles",
+        "summary": "List the Wise profiles of the configured token",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/connect": {
+      "post": {
+        "operationId": "BankingWiseController_connect",
+        "summary": "Connect a Wise profile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectWiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/sync": {
+      "post": {
+        "operationId": "BankingWiseController_sync",
+        "summary": "Enqueue a Wise transactions sync",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/pause": {
+      "post": {
+        "operationId": "BankingWiseController_pause",
+        "summary": "Pause the Wise feed sync",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/resume": {
+      "post": {
+        "operationId": "BankingWiseController_resume",
+        "summary": "Resume the Wise feed sync",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
+    "/api/banking/wise/disconnect": {
+      "delete": {
+        "operationId": "BankingWiseController_disconnect",
+        "summary": "Disconnect the Wise profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banking Wise"
+        ]
+      }
+    },
     "/api/transactions-locking/lock": {
       "put": {
         "operationId": "TransactionsLockingController_commandTransactionsLocking",
@@ -26923,6 +27038,11 @@
             "description": "The Plaid account ID",
             "example": "plaid-account-456"
           },
+          "bankFeedProvider": {
+            "type": "string",
+            "description": "The bank feed provider of the account (plaid, wise)",
+            "example": "plaid"
+          },
           "isFeedsActive": {
             "type": "boolean",
             "description": "Whether the feeds are active",
@@ -26991,6 +27111,7 @@
           "formattedAmount",
           "plaidItemId",
           "plaidAccountId",
+          "bankFeedProvider",
           "isFeedsActive",
           "isSyncingOwner",
           "isFeedsPaused",
@@ -27101,7 +27222,23 @@
           "plaidItemId": {
             "type": "string",
             "description": "Plaid item ID for syncing",
+            "example": "plaid_item_123456",
+            "deprecated": true
+          },
+          "bankFeedProvider": {
+            "type": "string",
+            "description": "Bank feed provider for syncing",
+            "example": "plaid"
+          },
+          "bankFeedProviderItemId": {
+            "type": "string",
+            "description": "Bank feed provider item ID for syncing",
             "example": "plaid_item_123456"
+          },
+          "bankFeedProviderAccountId": {
+            "type": "string",
+            "description": "Bank feed provider account ID for syncing",
+            "example": "plaid_account_123456"
           }
         },
         "required": [
@@ -36685,6 +36822,11 @@
             "description": "The Plaid account ID",
             "example": "plaid-account-456"
           },
+          "bankFeedProvider": {
+            "type": "string",
+            "description": "The bank feed provider of the account (plaid, wise)",
+            "example": "plaid"
+          },
           "isFeedsActive": {
             "type": "boolean",
             "description": "Whether the feeds are active",
@@ -36752,6 +36894,7 @@
           "uncategorizedTransactionsCount",
           "plaidItemId",
           "plaidAccountId",
+          "bankFeedProvider",
           "isFeedsActive",
           "isSyncingOwner",
           "isFeedsPaused",
@@ -38020,6 +38163,16 @@
           "uncategorizedTransactions",
           "matchedTransactions"
         ]
+      },
+      "ConnectWiseDto": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": "number",
+            "example": 12345,
+            "description": "The Wise profile id to connect. Falls back to WISE_PROFILE_ID, then to the only profile of the token."
+          }
+        }
       },
       "TransactionLockingResponseDto": {
         "type": "object",

@@ -3773,6 +3773,125 @@ export interface paths {
         patch: operations["BankingMatchingController_unmatchMatchedTransaction"];
         trace?: never;
     };
+    "/api/banking/wise/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the Wise integration status */
+        get: operations["BankingWiseController_getStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Wise profiles of the configured token */
+        get: operations["BankingWiseController_getProfiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect a Wise profile */
+        post: operations["BankingWiseController_connect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enqueue a Wise transactions sync */
+        post: operations["BankingWiseController_sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause the Wise feed sync */
+        post: operations["BankingWiseController_pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume the Wise feed sync */
+        post: operations["BankingWiseController_resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/banking/wise/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Disconnect the Wise profile */
+        delete: operations["BankingWiseController_disconnect"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/transactions-locking/lock": {
         parameters: {
             query?: never;
@@ -6648,6 +6767,11 @@ export interface components {
              */
             plaidAccountId: string;
             /**
+             * @description The bank feed provider of the account (plaid, wise)
+             * @example plaid
+             */
+            bankFeedProvider: string;
+            /**
              * @description Whether the feeds are active
              * @example true
              */
@@ -6765,10 +6889,26 @@ export interface components {
              */
             plaidAccountId?: string;
             /**
+             * @deprecated
              * @description Plaid item ID for syncing
              * @example plaid_item_123456
              */
             plaidItemId?: string;
+            /**
+             * @description Bank feed provider for syncing
+             * @example plaid
+             */
+            bankFeedProvider?: string;
+            /**
+             * @description Bank feed provider item ID for syncing
+             * @example plaid_item_123456
+             */
+            bankFeedProviderItemId?: string;
+            /**
+             * @description Bank feed provider account ID for syncing
+             * @example plaid_account_123456
+             */
+            bankFeedProviderAccountId?: string;
         };
         EditAccountDTO: {
             /**
@@ -13353,6 +13493,11 @@ export interface components {
              */
             plaidAccountId: string;
             /**
+             * @description The bank feed provider of the account (plaid, wise)
+             * @example plaid
+             */
+            bankFeedProvider: string;
+            /**
              * @description Whether the feeds are active
              * @example true
              */
@@ -14278,6 +14423,13 @@ export interface components {
              *     ]
              */
             matchedTransactions: string[];
+        };
+        ConnectWiseDto: {
+            /**
+             * @description The Wise profile id to connect. Falls back to WISE_PROFILE_ID, then to the only profile of the token.
+             * @example 12345
+             */
+            profileId?: number;
         };
         TransactionLockingResponseDto: {
             /**
@@ -25921,6 +26073,129 @@ export interface operations {
             path: {
                 uncategorizedTransactionId: number;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_getStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_getProfiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_connect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectWiseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankingWiseController_disconnect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;

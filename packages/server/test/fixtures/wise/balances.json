@@ -1,0 +1,47 @@
+[
+  {
+    "id": 64,
+    "currency": "EUR",
+    "type": "STANDARD",
+    "name": "EUR",
+    "visible": true,
+    "investmentState": "NOT_INVESTED",
+    "amount": { "value": 1520.42, "currency": "EUR" }
+  },
+  {
+    "id": 65,
+    "currency": "USD",
+    "type": "STANDARD",
+    "name": "USD",
+    "visible": true,
+    "investmentState": "NOT_INVESTED",
+    "amount": { "value": 300.0, "currency": "USD" }
+  },
+  {
+    "id": 66,
+    "currency": "NZD",
+    "type": "SAVINGS",
+    "name": "Rainy day jar",
+    "visible": true,
+    "investmentState": "NOT_INVESTED",
+    "amount": { "value": 87.15, "currency": "NZD" }
+  },
+  {
+    "id": 67,
+    "currency": "GBP",
+    "type": "STANDARD",
+    "name": "GBP",
+    "visible": false,
+    "investmentState": "NOT_INVESTED",
+    "amount": { "value": 12.0, "currency": "GBP" }
+  },
+  {
+    "id": 68,
+    "currency": "AUD",
+    "type": "STANDARD",
+    "name": "AUD",
+    "visible": true,
+    "investmentState": "INVESTED",
+    "amount": { "value": 55.0, "currency": "AUD" }
+  }
+]

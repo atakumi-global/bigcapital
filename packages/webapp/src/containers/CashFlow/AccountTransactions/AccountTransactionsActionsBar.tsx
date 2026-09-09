@@ -47,6 +47,9 @@ import {
   useUpdateBankAccount,
   useExcludeUncategorizedTransactions,
   useUnexcludeUncategorizedTransactions,
+  useWiseSync,
+  useWisePause,
+  useWiseResume,
 } from '@/hooks/query/banking';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { compose } from '@/utils';
@@ -100,6 +103,14 @@ function AccountTransactionsActionsBarInner({
   const isFeedsActive = !!currentAccount?.isFeedsActive;
   const isFeedsPaused = !!currentAccount?.isFeedsPaused;
   const isSyncingOwner = !!currentAccount?.isSyncingOwner;
+
+  // Branch the feed actions on the bank feed provider: Plaid accounts keep
+  // the Plaid lifecycle endpoints, Wise accounts use the Wise endpoints.
+  const bankFeedProvider = currentAccount?.bankFeedProvider as
+    | string
+    | undefined;
+  const isWiseFeeds = isSyncingOwner && bankFeedProvider === 'wise';
+  const isPlaidFeeds = isSyncingOwner && !isWiseFeeds;
 
   // Handle table row size change.
   const handleTableRowSizeChange = (size: unknown) => {
@@ -224,6 +235,66 @@ function AccountTransactionsActionsBarInner({
   // Handles pause bank feeds syncing.
   const handlePauseFeedsSyncing = () => {
     openAlert('pause-feeds-syncing-bank-accounnt', {
+      bankAccountId: accountId,
+    });
+  };
+
+  // Wise feed mutations.
+  const { mutateAsync: syncWise } = useWiseSync();
+  const { mutateAsync: pauseWise } = useWisePause();
+  const { mutateAsync: resumeWise } = useWiseResume();
+
+  // Handles the Wise sync now click.
+  const handleWiseSyncClick = () => {
+    syncWise()
+      .then(() => {
+        AppToaster.show({
+          message: 'The Wise transactions sync has been queued.',
+          intent: Intent.SUCCESS,
+        });
+      })
+      .catch(() => {
+        AppToaster.show({
+          message: 'Something went wrong.',
+          intent: Intent.DANGER,
+        });
+      });
+  };
+  // Handles the Wise pause feeds click.
+  const handleWisePauseClick = () => {
+    pauseWise()
+      .then(() => {
+        AppToaster.show({
+          message: 'The Wise bank feeds have been paused.',
+          intent: Intent.SUCCESS,
+        });
+      })
+      .catch(() => {
+        AppToaster.show({
+          message: 'Something went wrong.',
+          intent: Intent.DANGER,
+        });
+      });
+  };
+  // Handles the Wise resume feeds click.
+  const handleWiseResumeClick = () => {
+    resumeWise()
+      .then(() => {
+        AppToaster.show({
+          message: 'The Wise bank feeds have been resumed.',
+          intent: Intent.SUCCESS,
+        });
+      })
+      .catch(() => {
+        AppToaster.show({
+          message: 'Something went wrong.',
+          intent: Intent.DANGER,
+        });
+      });
+  };
+  // Handles the Wise disconnect click.
+  const handleWiseDisconnectClick = () => {
+    openAlert('wise-disconnect-alert', {
       bankAccountId: accountId,
     });
   };
@@ -410,12 +481,21 @@ function AccountTransactionsActionsBarInner({
           }}
           content={
             <Menu>
-              <If condition={isSyncingOwner && isFeedsActive}>
+              <If condition={isPlaidFeeds && isFeedsActive}>
                 <MenuItem onClick={handleBankUpdateClick} text={'Update'} />
                 <MenuDivider />
               </If>
 
-              <If condition={isSyncingOwner && isFeedsActive && !isFeedsPaused}>
+              <If condition={isWiseFeeds && isFeedsActive}>
+                <MenuItem
+                  onClick={handleWiseSyncClick}
+                  text={'Update'}
+                  data-testId={'wise-sync-now'}
+                />
+                <MenuDivider />
+              </If>
+
+              <If condition={isPlaidFeeds && isFeedsActive && !isFeedsPaused}>
                 <MenuItem
                   onClick={handlePauseFeedsSyncing}
                   text={'Pause bank feeds'}
@@ -423,7 +503,15 @@ function AccountTransactionsActionsBarInner({
                 <MenuDivider />
               </If>
 
-              <If condition={isSyncingOwner && isFeedsActive && isFeedsPaused}>
+              <If condition={isWiseFeeds && isFeedsActive && !isFeedsPaused}>
+                <MenuItem
+                  onClick={handleWisePauseClick}
+                  text={'Pause bank feeds'}
+                />
+                <MenuDivider />
+              </If>
+
+              <If condition={isPlaidFeeds && isFeedsActive && isFeedsPaused}>
                 <MenuItem
                   onClick={handleResumeFeedsSyncing}
                   text={'Resume bank feeds'}
@@ -431,12 +519,27 @@ function AccountTransactionsActionsBarInner({
                 <MenuDivider />
               </If>
 
+              <If condition={isWiseFeeds && isFeedsActive && isFeedsPaused}>
+                <MenuItem
+                  onClick={handleWiseResumeClick}
+                  text={'Resume bank feeds'}
+                />
+                <MenuDivider />
+              </If>
+
               <MenuItem onClick={handleBankRulesClick} text={'Bank rules'} />
               <MenuDivider />
-              <If condition={isSyncingOwner && isFeedsActive}>
+              <If condition={isPlaidFeeds && isFeedsActive}>
                 <MenuItem
                   intent={Intent.DANGER}
                   onClick={handleDisconnectClick}
+                  text={'Disconnect'}
+                />
+              </If>
+              <If condition={isWiseFeeds && isFeedsActive}>
+                <MenuItem
+                  intent={Intent.DANGER}
+                  onClick={handleWiseDisconnectClick}
                   text={'Disconnect'}
                 />
               </If>

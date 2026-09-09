@@ -7,6 +7,7 @@ import {
 } from '@/constants/accounts';
 import { AccountTypesUtils } from '@/libs/accounts-utils/AccountTypesUtils';
 import { PlaidItem } from '@/modules/BankingPlaid/models/PlaidItem';
+import { BankFeedItem } from '@/modules/BankingFeeds/models/BankFeedItem';
 import { TenantBaseModel } from '@/modules/System/models/TenantBaseModel';
 import { flatToNestedArray } from '@/utils/flat-to-nested-array';
 import { ExportableModel } from '../../Export/decorators/ExportableModel.decorator';
@@ -43,6 +44,7 @@ export class Account extends TenantBaseModel {
   public isFeedsActive!: boolean;
   public isSyncingOwner!: boolean;
   public plaidItem!: PlaidItem;
+  public bankFeedItem?: BankFeedItem | null;
 
   /**
    * Table name.
@@ -346,6 +348,18 @@ export class Account extends TenantBaseModel {
         join: {
           from: 'accounts.plaidItemId',
           to: 'plaid_items.plaidItemId',
+        },
+      },
+
+      /**
+       * Account may belong to a provider-neutral bank feed item.
+       */
+      bankFeedItem: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: BankFeedItem,
+        join: {
+          from: 'accounts.bankFeedProviderItemId',
+          to: 'bank_feed_items.providerItemId',
         },
       },
     };
