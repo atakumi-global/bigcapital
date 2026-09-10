@@ -1,5 +1,6 @@
 # Fast-forwards the `prod` branch to the current tip of `stage`.
 # Fails safely when the update is not a fast-forward (prod has diverged).
+# Pure shell git: no JS actions, so nothing runs on the runner's Node.
 name: Promote to production
 on:
   workflow_dispatch:
@@ -13,13 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Promote stage to prod
         run: |
-          git fetch origin stage prod
-          echo "Promoting $(git rev-parse --short origin/stage) to prod"
-          git push origin origin/stage:refs/heads/prod
+          git init .
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch --depth=1 origin stage prod
+          echo "Promoting $(git rev-parse --short refs/remotes/origin/stage) to prod"
+          git push origin "refs/remotes/origin/stage:refs/heads/prod"

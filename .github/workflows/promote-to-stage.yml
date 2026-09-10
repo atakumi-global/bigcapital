@@ -1,5 +1,6 @@
 # Fast-forwards the `stage` branch to the current tip of `dev`.
 # Fails safely when the update is not a fast-forward (stage has diverged).
+# Pure shell git: no JS actions, so nothing runs on the runner's Node.
 name: Promote to stage
 on:
   workflow_dispatch:
@@ -13,13 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Promote dev to stage
         run: |
-          git fetch origin dev stage
-          echo "Promoting $(git rev-parse --short origin/dev) to stage"
-          git push origin origin/dev:refs/heads/stage
+          git init .
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch --depth=1 origin dev stage
+          echo "Promoting $(git rev-parse --short refs/remotes/origin/dev) to stage"
+          git push origin "refs/remotes/origin/dev:refs/heads/stage"
