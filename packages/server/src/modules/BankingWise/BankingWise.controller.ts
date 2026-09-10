@@ -9,7 +9,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { WiseItemService } from './WiseItem.service';
 import { WiseSyncEnqueueService } from './WiseSyncEnqueue.service';
-import { ConnectWiseDto } from './dtos/ConnectWise.dto';
+import { ConnectWiseDto, SyncWiseDto } from './dtos/ConnectWise.dto';
 
 @Controller('banking/wise')
 @ApiTags('Banking Wise')
@@ -39,11 +39,15 @@ export class BankingWiseController {
 
   @Post('sync')
   @ApiOperation({ summary: 'Enqueue a Wise transactions sync' })
-  async sync() {
+  async sync(@Body() syncDTO?: SyncWiseDto) {
     const item = await this.wiseItemService.getTenantWiseItem();
 
     if (!item) {
       throw new NotFoundException('Wise is not connected.');
+    }
+    // A new start date resets the cursors before the sync runs.
+    if (syncDTO?.syncStartDate) {
+      await this.wiseItemService.setSyncStartDate(syncDTO.syncStartDate);
     }
     await this.wiseSyncEnqueueService.enqueue(item.providerItemId);
   }

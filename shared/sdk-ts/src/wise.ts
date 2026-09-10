@@ -21,7 +21,7 @@ export interface WiseBalance {
   id: number;
   currency: string;
   type: string;
-  name?: string;
+  name?: string | null;
   visible?: boolean;
   investmentState?: string;
   amount: { value: number; currency: string };
@@ -34,12 +34,18 @@ export interface WiseStatusResponse {
   profile: WiseProfile | null;
   balances: WiseBalance[];
   lastSyncedAt: string | null;
+  syncStartDate: string | null;
   paused: boolean;
   status: string | null;
 }
 
 export interface WiseConnectBody {
   profileId?: number;
+  syncStartDate?: string;
+}
+
+export interface WiseSyncBody {
+  syncStartDate?: string;
 }
 
 export interface WiseConnectResponse {
@@ -71,9 +77,12 @@ export async function fetchWiseConnect(
   return data as WiseConnectResponse;
 }
 
-export async function fetchWiseSync(fetcher: ApiFetcher): Promise<void> {
-  const post = fetcher.path(WISE_ROUTES.SYNC).method("post").create();
-  await post({});
+export async function fetchWiseSync(
+  fetcher: ApiFetcher,
+  body?: WiseSyncBody,
+): Promise<void> {
+  const post = fetcher.path(WISE_ROUTES.SYNC).method('post').create();
+  await post((body ?? {}) as never);
 }
 
 export async function fetchWisePause(fetcher: ApiFetcher): Promise<void> {

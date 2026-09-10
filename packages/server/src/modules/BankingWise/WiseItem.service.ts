@@ -79,6 +79,9 @@ export class WiseItemService {
       profile,
       balances,
       lastSyncedAt: this.getLastSyncedAt(item),
+      syncStartDate:
+        (item?.syncState as WiseItemSyncState | undefined)?.syncStartDate ??
+        null,
       paused: item?.isPaused ?? false,
       status,
     };
@@ -131,6 +134,12 @@ export class WiseItemService {
         providerItemId: profileId,
         accessToken: null,
         status: 'active',
+        syncState: connectDTO?.syncStartDate
+          ? {
+              profileId: Number(profileId),
+              syncStartDate: connectDTO.syncStartDate,
+            }
+          : null,
       });
       // Store the item on system scope for job/webhook tenant resolution.
       // `UNIQUE(provider, provider_item_id)` guarantees one tenant per profile.
@@ -209,6 +218,28 @@ export class WiseItemService {
         bankFeedProviderAccountId: null,
         isFeedsActive: false,
         isSyncingOwner: false,
+      });
+  }
+
+  /**
+   * Sets the import start date of the connection and resets the per-balance
+   * cursors, so the next sync re-imports from that date.
+   * @param {string} syncStartDate - ISO 8601 date.
+   * @returns {Promise<void>}
+   */
+  public async setSyncStartDate(syncStartDate: string): Promise<void> {
+    const item = await this.getTenantWiseItemOrThrow();
+    const prevSyncState = (item.syncState || {}) as WiseItemSyncState;
+
+    await this.bankFeedItemModel()
+      .query()
+      .findById(item.id)
+      .patch({
+        syncState: {
+          ...prevSyncState,
+          syncStartDate,
+          balances: {},
+        },
       });
   }
 

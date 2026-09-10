@@ -14430,6 +14430,18 @@ export interface components {
              * @example 12345
              */
             profileId?: number;
+            /**
+             * @description Import transactions since this date (ISO 8601). Defaults to 90 days ago. The Wise statement window is hard-capped at 469 days.
+             * @example 2026-01-01
+             */
+            syncStartDate?: string;
+        };
+        SyncWiseDto: {
+            /**
+             * @description Resets the sync cursor and re-imports transactions since this date (ISO 8601). Hard-capped at 469 days back.
+             * @example 2026-01-01
+             */
+            syncStartDate?: string;
         };
         TransactionLockingResponseDto: {
             /**
@@ -26147,7 +26159,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncWiseDto"];
+            };
+        };
         responses: {
             201: {
                 headers: {

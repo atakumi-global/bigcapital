@@ -24,11 +24,13 @@ import {
 /** Initial statement window when a balance was never synced before. */
 const INITIAL_SYNC_WINDOW_DAYS = 90;
 
-/** Hard cap of the Wise balance-statement endpoint window. */
-const MAX_STATEMENT_WINDOW_DAYS = 469;
+/** Hard cap of the Wise balance-statement endpoint window (exact span). */
+const MAX_STATEMENT_WINDOW_MS = 469 * 24 * 60 * 60 * 1000;
 
 export interface WiseItemSyncState {
   profileId?: number;
+  /** Optional import start date (ISO) overriding the default 90-day window. */
+  syncStartDate?: string;
   balances?: Record<string, { currency: string; lastSyncedAt: string }>;
 }
 
@@ -67,33 +69,46 @@ export class WiseBankFeedProvider implements BankFeedProviderClient {
     return { institutionName: 'Wise', accounts };
   }
 
-  /**
-   * Fetches the statement transactions of each syncable balance since its last
-   * sync. Wise statements are append-only, so `modified` and `removed` are
-   * always empty for this provider.
-   * @param {BankFeedItemRecord} item - Bank feed item.
-   * @returns {Promise<BankFeedTransactionUpdates>}
-   */
-  async fetchTransactionUpdates(
-    item: BankFeedItemRecord,
-  ): Promise<BankFeedTransactionUpdates> {
-    this.assertConfigured();
+/**
+ * Fetches the statement transactions of each syncable balance since its last
+ * sync. Wise statements are append-only, so `modified` and `removed` are
+ * always empty for this provider.
+ *
+ * The Wise statement window is capped at 469 days per request; older start
+ * dates are backfilled by chaining consecutive 469-day windows.
+ * @param {BankFeedItemRecord} item - Bank feed item.
+ * @returns {Promise<BankFeedTransactionUpdates>}
+ */
+async fetchTransactionUpdates(
+  item: BankFeedItemRecord,
+): Promise<BankFeedTransactionUpdates> {
+  this.assertConfigured();
 
-    const profileId = item.providerItemId;
-    const balances = await this.listSyncableBalances(profileId);
-    const prevSyncState = (item.syncState || {}) as WiseItemSyncState;
+  const profileId = item.providerItemId;
+  const balances = await this.listSyncableBalances(profileId);
+  const prevSyncState = (item.syncState || {}) as WiseItemSyncState;
 
-    const now = new Date();
-    const intervalEnd = now.toISOString();
+  const now = new Date();
+  const intervalEnd = now.toISOString();
 
-    const added: BankFeedTransaction[] = [];
-    const balancesState: WiseItemSyncState['balances'] = {
-      ...prevSyncState.balances,
-    };
-    for (const balance of balances) {
-      const intervalStart = this.getBalanceIntervalStart(
-        prevSyncState,
-        balance,
+  const added: BankFeedTransaction[] = [];
+  const balancesState: WiseItemSyncState['balances'] = {
+    ...prevSyncState.balances,
+  };
+  for (const balance of balances) {
+    const windowStart = this.getBalanceWindowStart(
+      prevSyncState,
+      balance,
+      now,
+    );
+    // Chain consecutive windows of at most 469 days until now.
+    for (
+      let intervalStart = windowStart;
+      intervalStart < now;
+      intervalStart = new Date(intervalStart.getTime() + MAX_STATEMENT_WINDOW_MS)
+    ) {
+      const windowEnd = this.minDate(
+        new Date(intervalStart.getTime() + MAX_STATEMENT_WINDOW_MS),
         now,
       );
       const statement = await this.wiseClient.getBalanceStatement(
@@ -101,30 +116,31 @@ export class WiseBankFeedProvider implements BankFeedProviderClient {
         balance.id,
         {
           currency: balance.currency,
-          intervalStart,
-          intervalEnd,
+          intervalStart: intervalStart.toISOString(),
+          intervalEnd: windowEnd.toISOString(),
         },
       );
       const transactions = (statement.transactions || []).map((txn) =>
         transformWiseStatementTxnToBankFeedTransaction(txn, balance.id),
       );
       added.push(...transactions);
-
-      balancesState[String(balance.id)] = {
-        currency: balance.currency,
-        lastSyncedAt: intervalEnd,
-      };
     }
-    return {
-      added,
-      modified: [],
-      removedProviderTransactionIds: [],
-      syncState: {
-        profileId: Number(profileId),
-        balances: balancesState,
-      },
+    balancesState[String(balance.id)] = {
+      currency: balance.currency,
+      lastSyncedAt: intervalEnd,
     };
   }
+  return {
+    added,
+    modified: [],
+    removedProviderTransactionIds: [],
+    syncState: {
+      ...prevSyncState,
+      profileId: Number(profileId),
+      balances: balancesState,
+    },
+  };
+}
 
   verifyWebhook(
     _rawBody: Buffer,
@@ -158,26 +174,31 @@ export class WiseBankFeedProvider implements BankFeedProviderClient {
   }
 
   /**
-   * Resolves the statement window start of the given balance: the last synced
-   * cursor, the initial 90-day window for new balances, hard-capped to the
-   * 469-day Wise statement limit.
+   * Resolves the backfill window start of the given balance: the last synced
+   * cursor, the configured `syncStartDate`, or the initial 90-day window for
+   * new balances.
    */
-  private getBalanceIntervalStart(
+  private getBalanceWindowStart(
     prevSyncState: WiseItemSyncState,
     balance: WiseBalance,
     now: Date,
-  ): string {
+  ): Date {
     const lastSyncedAt =
       prevSyncState.balances?.[String(balance.id)]?.lastSyncedAt;
 
-    const initialStart = new Date(now);
-    initialStart.setDate(initialStart.getDate() - INITIAL_SYNC_WINDOW_DAYS);
+    if (lastSyncedAt) {
+      return new Date(lastSyncedAt);
+    }
+    if (prevSyncState.syncStartDate) {
+      return new Date(prevSyncState.syncStartDate);
+    }
+    const initial = new Date(now);
+    initial.setDate(initial.getDate() - INITIAL_SYNC_WINDOW_DAYS);
 
-    const maxStart = new Date(now);
-    maxStart.setDate(maxStart.getDate() - MAX_STATEMENT_WINDOW_DAYS);
+    return initial;
+  }
 
-    const start = lastSyncedAt ? new Date(lastSyncedAt) : initialStart;
-
-    return (start < maxStart ? maxStart : start).toISOString();
+  private minDate(a: Date, b: Date): Date {
+    return a < b ? a : b;
   }
 }

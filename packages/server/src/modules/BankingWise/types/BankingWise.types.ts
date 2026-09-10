@@ -23,6 +23,7 @@ export interface WiseStatusResponse {
   profile: WiseProfile | null;
   balances: WiseBalance[];
   lastSyncedAt: string | null;
+  syncStartDate: string | null;
   paused: boolean;
   status: string | null;
 }

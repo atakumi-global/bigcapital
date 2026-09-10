@@ -15207,6 +15207,16 @@
         "operationId": "BankingWiseController_sync",
         "summary": "Enqueue a Wise transactions sync",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncWiseDto"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": ""
@@ -38171,6 +38181,21 @@
             "type": "number",
             "example": 12345,
             "description": "The Wise profile id to connect. Falls back to WISE_PROFILE_ID, then to the only profile of the token."
+          },
+          "syncStartDate": {
+            "type": "string",
+            "example": "2026-01-01",
+            "description": "Import transactions since this date (ISO 8601). Defaults to 90 days ago. The Wise statement window is hard-capped at 469 days."
+          }
+        }
+      },
+      "SyncWiseDto": {
+        "type": "object",
+        "properties": {
+          "syncStartDate": {
+            "type": "string",
+            "example": "2026-01-01",
+            "description": "Resets the sync cursor and re-imports transactions since this date (ISO 8601). Hard-capped at 469 days back."
           }
         }
       },

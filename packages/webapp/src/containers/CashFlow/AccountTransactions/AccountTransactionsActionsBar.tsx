@@ -246,7 +246,7 @@ function AccountTransactionsActionsBarInner({
 
   // Handles the Wise sync now click.
   const handleWiseSyncClick = () => {
-    syncWise()
+    syncWise({})
       .then(() => {
         AppToaster.show({
           message: 'The Wise transactions sync has been queued.',

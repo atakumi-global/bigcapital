@@ -131,6 +131,43 @@ describe('WiseBankFeedProvider', () => {
     expect(intervalStart).toBeLessThanOrEqual(before - ninetyDays + 60_000);
   });
 
+  it('backfills old start dates in chained windows of at most 469 days', async () => {
+    const provider = buildProvider();
+
+    await provider.fetchTransactionUpdates({
+      tenantId: 1,
+      provider: 'wise',
+      providerItemId: PROFILE_ID,
+      syncState: {
+        profileId: 12345,
+        syncStartDate: '2024-01-01T00:00:00.000Z',
+      },
+    });
+
+    const eurCalls = wiseClient.getBalanceStatement.mock.calls.filter(
+      (call) => call[1] === 64,
+    );
+    // ~2.7 years of history needs multiple windows.
+    expect(eurCalls.length).toBeGreaterThan(1);
+
+    const maxSpanMs = 469 * 24 * 60 * 60 * 1000;
+    let previousEnd: number | null = null;
+
+    for (const [, , params] of eurCalls) {
+      const start = new Date(params.intervalStart).getTime();
+      const end = new Date(params.intervalEnd).getTime();
+
+      expect(end - start).toBeLessThanOrEqual(maxSpanMs);
+      // Windows chain: each window starts where the previous one ended.
+      if (previousEnd !== null) {
+        expect(start).toBe(previousEnd);
+      }
+      previousEnd = end;
+    }
+    // The first window starts at the configured sync start date.
+    expect(eurCalls[0][2].intervalStart).toBe('2024-01-01T00:00:00.000Z');
+  });
+
   it('preserves the cursors of balances that are no longer syncable', async () => {
     const provider = buildProvider();
 
