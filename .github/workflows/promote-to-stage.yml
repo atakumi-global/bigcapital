@@ -1,0 +1,25 @@
+# Fast-forwards the `stage` branch to the current tip of `dev`.
+# Fails safely when the update is not a fast-forward (stage has diverged).
+name: Promote to stage
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    name: Fast-forward stage to dev
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Promote dev to stage
+        run: |
+          git fetch origin dev stage
+          echo "Promoting $(git rev-parse --short origin/dev) to stage"
+          git push origin origin/dev:refs/heads/stage
