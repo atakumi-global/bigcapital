@@ -95,6 +95,9 @@ export class BankFeedSyncDb {
     }
     await this.createAccountService.createAccount(createBankAccountDTO, trx, {
       ignoreUniqueName: true,
+      // Bank-feed accounts use an empty code (same as Plaid). Skip the
+      // account-code-required check for synced accounts.
+      ignoreAccountCode: true,
     });
   }
 
