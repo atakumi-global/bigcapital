@@ -2,16 +2,20 @@ import {
   Button,
   DialogBody,
   DialogFooter,
+  FormGroup,
   Intent,
   Spinner,
 } from '@blueprintjs/core';
+import { DateInput } from '@blueprintjs/datetime';
+import moment from 'moment';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { AppToaster } from '@/components';
 import { useDialogContext } from '@/components/Dialog/DialogProvider';
 import {
   useWiseConnect,
   useWiseStatus,
-  useWiseSync,
+  useWiseSyncAndWait,
 } from '@/hooks/query/banking';
 import { useDialogActions } from '@/hooks/state';
 
@@ -26,7 +30,16 @@ export function ConnectWiseDialogContent() {
   const { data: status, isLoading } = useWiseStatus();
   const { mutateAsync: connectWise, isPending: isConnecting } =
     useWiseConnect();
-  const { mutateAsync: syncWise, isPending: isSyncing } = useWiseSync();
+  const { syncAndWait, isSyncingOrWaiting: isSyncing } =
+    useWiseSyncAndWait();
+
+  // Optional import start date. Empty means the default 90-day window.
+  const [syncStartDate, setSyncStartDate] = useState<string | undefined>();
+
+  // Handle the start date change.
+  const handleSyncStartDateChange = (date: Date | null) => {
+    setSyncStartDate(date ? moment(date).format('YYYY-MM-DD') : undefined);
+  };
 
   // Handle cancel button click.
   const handleCancelBtnClick = () => {
@@ -34,7 +47,7 @@ export function ConnectWiseDialogContent() {
   };
   // Handle connect button click.
   const handleConnectBtnClick = () => {
-    connectWise({})
+    connectWise({ syncStartDate })
       .then(() => {
         AppToaster.show({
           message: 'The Wise profile has been connected.',
@@ -54,15 +67,28 @@ export function ConnectWiseDialogContent() {
         });
       });
   };
-  // Handle sync now button click.
+  // Handle sync now button click. A newly set start date resets the sync
+  // cursor and re-imports the history from that date. Waits for the sync to
+  // land (polls the status) instead of fire-and-forget.
   const handleSyncNowBtnClick = () => {
-    syncWise()
-      .then(() => {
+    const effectiveSyncStartDate =
+      syncStartDate ?? status?.syncStartDate ?? undefined;
+
+    syncAndWait(
+      effectiveSyncStartDate
+        ? { syncStartDate: effectiveSyncStartDate }
+        : {},
+    )
+      .then((landed) => {
         AppToaster.show({
-          message: 'The Wise transactions sync has been queued.',
-          intent: Intent.SUCCESS,
+          message: landed
+            ? 'The Wise transactions have been synced.'
+            : 'The sync is taking longer than usual and continues in the background.',
+          intent: landed ? Intent.SUCCESS : Intent.WARNING,
         });
-        closeDialog(name);
+        if (landed) {
+          closeDialog(name);
+        }
       })
       .catch(() => {
         AppToaster.show({
@@ -111,6 +137,10 @@ export function ConnectWiseDialogContent() {
             )}
           </Description>
           <WiseBalanceList balances={status.balances} />
+          <SyncStartDateField
+            value={syncStartDate ?? status.syncStartDate ?? undefined}
+            onChange={handleSyncStartDateChange}
+          />
         </DialogBody>
         <DialogFooter
           actions={
@@ -156,6 +186,10 @@ export function ConnectWiseDialogContent() {
           accounts, and their transactions will sync every 6 hours:
         </Description>
         <WiseBalanceList balances={status.balances} />
+        <SyncStartDateField
+          value={syncStartDate}
+          onChange={handleSyncStartDateChange}
+        />
       </DialogBody>
       <DialogFooter
         actions={
@@ -176,13 +210,48 @@ export function ConnectWiseDialogContent() {
   );
 }
 
+/**
+ * Optional import start date field. Older dates are backfilled automatically
+ * in chained 469-day statement windows.
+ */
+function SyncStartDateField({
+  value,
+  onChange,
+}: {
+  value?: string;
+  onChange: (date: Date | null) => void;
+}) {
+  return (
+    <FormGroup
+      label={'Import transactions since'}
+      labelInfo={'(optional)'}
+      helperText={
+        'Leave empty to import the last 90 days. Older dates are backfilled in 469-day windows.'
+      }
+      style={{ marginTop: 16 }}
+    >
+      <DateInput
+        value={value ? new Date(value) : null}
+        onChange={onChange}
+        formatDate={(date) => moment(date).format('YYYY-MM-DD')}
+        parseDate={(str) => moment(str, 'YYYY-MM-DD').toDate()}
+        placeholder={'YYYY-MM-DD'}
+        maxDate={new Date()}
+        canClearSelection
+        closeOnSelection
+        fill
+      />
+    </FormGroup>
+  );
+}
+
 function WiseBalanceList({
   balances,
 }: {
   balances: {
     id: number;
     currency: string;
-    name?: string;
+    name?: string | null;
     type: string;
     amount: { value: number; currency: string };
   }[];
@@ -195,9 +264,7 @@ function WiseBalanceList({
       {balances.map((balance) => (
         <BalancesListItem key={balance.id}>
           <strong>{balance.currency}</strong>
-          {balance.type === 'SAVINGS' && balance.name
-            ? ` — ${balance.name}`
-            : ''}
+          {balance.name ? ` — ${balance.name}` : ''}
           <BalanceAmount>
             {balance.amount.value.toFixed(2)} {balance.amount.currency}
           </BalanceAmount>
