@@ -56,6 +56,16 @@ describe('WiseClient', () => {
     expect(fakeHttp.get).toHaveBeenCalledWith('/profiles');
   });
 
+  it('requests the balances with the required types filter', async () => {
+    fakeHttp.get.mockResolvedValue({ data: [] });
+    const client = await buildClient();
+
+    await client.listBalances(12345);
+    expect(fakeHttp.get).toHaveBeenCalledWith('/profiles/12345/balances', {
+      params: { types: 'STANDARD,SAVINGS' },
+    });
+  });
+
   it('requests the balance statement with the COMPACT type and window', async () => {
     fakeHttp.get.mockResolvedValue({ data: { transactions: [] } });
     const client = await buildClient();

@@ -25,13 +25,14 @@ export const isSyncableWiseBalance = (balance: WiseBalance): boolean => {
 };
 
 /**
- * Composes the Bigcapital account name of the given Wise balance. Savings
- * jars include the jar name to stay distinguishable.
+ * Composes the Bigcapital account name of the given Wise balance. Named
+ * balances (jars) include the jar name to stay distinguishable; unnamed
+ * balances go by currency.
  * @param {WiseBalance} balance - Wise balance.
  * @returns {string}
  */
 export const getWiseBalanceAccountName = (balance: WiseBalance): string => {
-  return balance.type === 'SAVINGS'
+  return balance.name
     ? `Wise — ${balance.name} (${balance.currency})`
     : `Wise — ${balance.currency}`;
 };

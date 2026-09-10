@@ -3,7 +3,7 @@
     "id": 64,
     "currency": "EUR",
     "type": "STANDARD",
-    "name": "EUR",
+    "name": null,
     "visible": true,
     "investmentState": "NOT_INVESTED",
     "amount": { "value": 1520.42, "currency": "EUR" }
@@ -12,7 +12,7 @@
     "id": 65,
     "currency": "USD",
     "type": "STANDARD",
-    "name": "USD",
+    "name": null,
     "visible": true,
     "investmentState": "NOT_INVESTED",
     "amount": { "value": 300.0, "currency": "USD" }
@@ -30,7 +30,7 @@
     "id": 67,
     "currency": "GBP",
     "type": "STANDARD",
-    "name": "GBP",
+    "name": null,
     "visible": false,
     "investmentState": "NOT_INVESTED",
     "amount": { "value": 12.0, "currency": "GBP" }
@@ -39,7 +39,7 @@
     "id": 68,
     "currency": "AUD",
     "type": "STANDARD",
-    "name": "AUD",
+    "name": null,
     "visible": true,
     "investmentState": "INVESTED",
     "amount": { "value": 55.0, "currency": "AUD" }

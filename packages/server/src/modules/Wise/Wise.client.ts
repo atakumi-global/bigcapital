@@ -38,12 +38,17 @@ export class WiseClient {
   }
 
   /**
-   * Lists the balance accounts of the given profile.
+   * Lists the balance accounts of the given profile. The endpoint requires
+   * the `types` filter; standard balances and savings jars support statements.
    * @param {number} profileId - Wise profile id.
    * @returns {Promise<WiseBalance[]>}
    */
   public listBalances(profileId: number | string): Promise<WiseBalance[]> {
-    return this.request((http) => http.get(`/profiles/${profileId}/balances`));
+    return this.request((http) =>
+      http.get(`/profiles/${profileId}/balances`, {
+        params: { types: 'STANDARD,SAVINGS' },
+      }),
+    );
   }
 
   /**
