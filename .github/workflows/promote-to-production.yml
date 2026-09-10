@@ -18,6 +18,6 @@ jobs:
         run: |
           git init .
           git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          git fetch --depth=1 origin stage prod
+          git fetch origin stage prod
           echo "Promoting $(git rev-parse --short refs/remotes/origin/stage) to prod"
           git push origin "refs/remotes/origin/stage:refs/heads/prod"
