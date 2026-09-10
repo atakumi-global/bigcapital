@@ -106,6 +106,15 @@ describe('BankingWise.utils', () => {
       expect(credit.amount).toBe(500);
     });
 
+    it('truncates the ISO timestamp to a date-only value', () => {
+      const txn = transformWiseStatementTxnToBankFeedTransaction(
+        transactions[0],
+        64,
+      );
+
+      expect(txn.date).toBe('2026-08-05');
+    });
+
     it('uses the reference number as provider transaction id', () => {
       const txn = transformWiseStatementTxnToBankFeedTransaction(
         transactions[0],

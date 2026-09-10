@@ -137,7 +137,9 @@ export const transformWiseStatementTxnToBankFeedTransaction = (
     provider: BankFeedProvider.Wise,
     providerTransactionId: getWiseProviderTransactionId(txn),
     providerAccountId: String(balanceId),
-    date: txn.date,
+    // The `date` column is a MySQL DATE. Wise returns a full ISO timestamp,
+    // so truncate to the date portion.
+    date: txn.date.slice(0, 10),
     amount: txn.amount.value,
     currencyCode: txn.amount.currency,
     description: txn.details?.description || '',
