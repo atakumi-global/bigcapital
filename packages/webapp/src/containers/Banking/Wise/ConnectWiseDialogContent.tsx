@@ -8,7 +8,11 @@ import {
 import styled from 'styled-components';
 import { AppToaster } from '@/components';
 import { useDialogContext } from '@/components/Dialog/DialogProvider';
-import { useWiseConnect, useWiseStatus } from '@/hooks/query/banking';
+import {
+  useWiseConnect,
+  useWiseStatus,
+  useWiseSync,
+} from '@/hooks/query/banking';
 import { useDialogActions } from '@/hooks/state';
 
 /**
@@ -22,6 +26,7 @@ export function ConnectWiseDialogContent() {
   const { data: status, isLoading } = useWiseStatus();
   const { mutateAsync: connectWise, isPending: isConnecting } =
     useWiseConnect();
+  const { mutateAsync: syncWise, isPending: isSyncing } = useWiseSync();
 
   // Handle cancel button click.
   const handleCancelBtnClick = () => {
@@ -45,6 +50,23 @@ export function ConnectWiseDialogContent() {
           message: isConflict
             ? 'This Wise profile is already connected by another organization.'
             : 'Something went wrong.',
+          intent: Intent.DANGER,
+        });
+      });
+  };
+  // Handle sync now button click.
+  const handleSyncNowBtnClick = () => {
+    syncWise()
+      .then(() => {
+        AppToaster.show({
+          message: 'The Wise transactions sync has been queued.',
+          intent: Intent.SUCCESS,
+        });
+        closeDialog(name);
+      })
+      .catch(() => {
+        AppToaster.show({
+          message: 'Something went wrong.',
           intent: Intent.DANGER,
         });
       });
@@ -91,7 +113,19 @@ export function ConnectWiseDialogContent() {
           <WiseBalanceList balances={status.balances} />
         </DialogBody>
         <DialogFooter
-          actions={<Button onClick={handleCancelBtnClick}>Close</Button>}
+          actions={
+            <>
+              <Button onClick={handleCancelBtnClick}>Close</Button>
+              <Button
+                intent={Intent.PRIMARY}
+                onClick={handleSyncNowBtnClick}
+                loading={isSyncing}
+                data-testId={'wise-sync-now'}
+              >
+                Sync now
+              </Button>
+            </>
+          }
         />
       </>
     );
