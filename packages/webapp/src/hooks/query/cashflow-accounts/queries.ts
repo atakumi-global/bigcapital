@@ -21,6 +21,7 @@ import {
   QueryKey,
 } from '@tanstack/react-query';
 import { useApiFetcher } from '../../useRequest';
+import { getNextPageFromPagination } from '../utils/infinite-pagination';
 import { accountsKeys } from '../accounts/query-keys';
 import { customersKeys } from '../customers/query-keys';
 import { financialReportsKeys } from '../FinancialReports/query-keys';
@@ -192,7 +193,7 @@ export function useAccountTransactionsInfinity(
         page: pageParam,
       }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage?.pagination?.nextPage,
+    getNextPageParam: getNextPageFromPagination,
   });
 }
 
@@ -226,7 +227,7 @@ export function useAccountUncategorizedTransactionsInfinity(
         page: pageParam,
       }) as Promise<AccountUncategorizedTransactionsInfinityPage>,
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage?.pagination?.nextPage,
+    getNextPageParam: getNextPageFromPagination,
   });
 }
 
