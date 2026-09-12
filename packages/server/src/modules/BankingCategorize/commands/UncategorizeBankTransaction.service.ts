@@ -8,6 +8,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UnitOfWork } from '@/modules/Tenancy/TenancyDB/UnitOfWork.service';
 import { events } from '@/common/events/events';
+import { IBankTransactionUnmatchedEventPayload } from '../../BankingMatching/types';
 import { UncategorizedBankTransaction } from '../../BankingTransactions/models/UncategorizedBankTransaction';
 import { MatchedBankTransaction } from '../../BankingMatching/models/MatchedBankTransaction';
 import { TenantModelProxy } from '@/modules/System/models/TenantBaseModel';
@@ -89,10 +90,33 @@ export class UncategorizeBankTransactionService {
       // Removes the match-links, otherwise a dangling matched_bank_transactions
       // row keeps the feed item hidden from the uncategorized list (the list
       // filter requires no match-link row via `whereNull(matchedBankTransactions.id)`).
-      await this.matchedBankTransactionModel()
+      const matchedTransactions = await this.matchedBankTransactionModel()
         .query(trx)
-        .whereIn('uncategorizedTransactionId', oldUncategoirzedTransactionsIds)
-        .delete();
+        .whereIn('uncategorizedTransactionId', oldUncategoirzedTransactionsIds);
+
+      if (matchedTransactions.length > 0) {
+        await this.matchedBankTransactionModel()
+          .query(trx)
+          .whereIn('uncategorizedTransactionId', oldUncategoirzedTransactionsIds)
+          .delete();
+
+        // Emits `onUnmatched` per affected transaction so the account
+        // uncategorized counter and the audit log stay consistent with the
+        // regular unmatch flow.
+        const matchedUncategorizedIds = [
+          ...new Set(
+            matchedTransactions.map(
+              (matched) => matched.uncategorizedTransactionId,
+            ),
+          ),
+        ];
+        for (const id of matchedUncategorizedIds) {
+          await this.eventPublisher.emitAsync(events.bankMatch.onUnmatched, {
+            uncategorizedTransactionId: id,
+            trx,
+          } as IBankTransactionUnmatchedEventPayload);
+        }
+      }
       const uncategorizedTransactions =
         await this.uncategorizedBankTransactionModel()
           .query(trx)
