@@ -9,6 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UnitOfWork } from '@/modules/Tenancy/TenancyDB/UnitOfWork.service';
 import { events } from '@/common/events/events';
 import { UncategorizedBankTransaction } from '../../BankingTransactions/models/UncategorizedBankTransaction';
+import { MatchedBankTransaction } from '../../BankingMatching/models/MatchedBankTransaction';
 import { TenantModelProxy } from '@/modules/System/models/TenantBaseModel';
 
 @Injectable()
@@ -20,6 +21,11 @@ export class UncategorizeBankTransactionService {
     @Inject(UncategorizedBankTransaction.name)
     private readonly uncategorizedBankTransactionModel: TenantModelProxy<
       typeof UncategorizedBankTransaction
+    >,
+
+    @Inject(MatchedBankTransaction.name)
+    private readonly matchedBankTransactionModel: TenantModelProxy<
+      typeof MatchedBankTransaction
     >,
   ) {}
 
@@ -80,6 +86,13 @@ export class UncategorizeBankTransactionService {
           categorizeRefId: null,
           categorizeRefType: null,
         });
+      // Removes the match-links, otherwise a dangling matched_bank_transactions
+      // row keeps the feed item hidden from the uncategorized list (the list
+      // filter requires no match-link row via `whereNull(matchedBankTransactions.id)`).
+      await this.matchedBankTransactionModel()
+        .query(trx)
+        .whereIn('uncategorizedTransactionId', oldUncategoirzedTransactionsIds)
+        .delete();
       const uncategorizedTransactions =
         await this.uncategorizedBankTransactionModel()
           .query(trx)

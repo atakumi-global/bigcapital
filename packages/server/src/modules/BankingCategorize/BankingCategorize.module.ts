@@ -2,6 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { CreateUncategorizedTransactionService } from './commands/CreateUncategorizedTransaction.service';
 import { CategorizeTransactionAsExpense } from './commands/CategorizeTransactionAsExpense';
 import { BankingTransactionsModule } from '../BankingTransactions/BankingTransactions.module';
+import { BankingMatchingModule } from '../BankingMatching/BankingMatching.module';
 import { ExpensesModule } from '../Expenses/Expenses.module';
 import { UncategorizedTransactionsImportable } from './commands/UncategorizedTransactionsImportable';
 import { BankingCategorizeController } from './BankingCategorize.controller';
@@ -13,6 +14,7 @@ import { UncategorizeBankTransactionsBulk } from './commands/UncategorizeBankTra
 @Module({
   imports: [
     BankingTransactionsModule,
+    BankingMatchingModule,
     ExpensesModule,
     forwardRef(() => BankingTransactionsModule),
   ],
