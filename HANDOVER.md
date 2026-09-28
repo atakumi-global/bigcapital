@@ -31,6 +31,14 @@ holds what the next person needs that is not in the tickets.
 - **Node 18.16.1.** `engines` claims 16/17/18; CONTRIBUTING says 18; use 18.16.1.
 - **This is a fork.** `origin` is upstream — pushing there is a mistake, not a
   shortcut.
+- **The pre-commit hook runs `npm run format` then `git add -A`.** That stages
+  the entire working tree — scratch directories included — and sweeps unrelated
+  reformats into your commit (observed: 24 scratch files and 7 unrelated source
+  files nearly landed in a docs commit). Stage explicitly and commit with
+  `--no-verify`, or fix the hook.
+- **commitlint uses `@commitlint/config-lerna-scopes`** — the scope must be an
+  existing package name (`server`, `webapp`, …), so a scope like `standard` is
+  rejected. Use a package scope or `--no-verify`.
 
 ## Verified facts (do not re-derive)
 
