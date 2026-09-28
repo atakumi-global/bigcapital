@@ -13,7 +13,39 @@ Bigcapital is a multi-tenant accounting SaaS. pnpm + Lerna monorepo (independent
 | `@bigcapital/email-components` | `shared/email-components` | Email templates (react-email). Vite, Storybook.                                                              |
 | `@bigcapital/sdk-ts`           | `shared/sdk-ts`           | TypeScript client generated from OpenAPI spec.                                                               |
 
+## Plane — source of truth
+
+Work is tracked in Plane: workspace **`atakumi`**, project **Bigcapital**, identifier **`BIG`**. Ids live in `.plane.json` — that file is the only authoritative source for the workspace.
+
+- **Identifiers are automatic.** Plane assigns the next number (`BIG-42`). Never choose, invent or reuse one.
+- **Estimates** use the Fibonacci scale (`1, 2, 3, 5, 8, 13, 21`) and are written to the work item's `point` field. 21 or above means split it.
+- **Lifecycle:** Backlog → Prepare → Todo → In Progress → Blocked → In Review → Approved → Deployed to stage → Approved by client → In production → Done / Cancelled.
+- **Approval is human.** An agent moves work and records evidence; it never approves, and never moves an item past **In Review** without a recorded human approval. On this Plane build there are no custom fields: approvals use the `needs-approval` / `approved` labels plus a comment in the fixed form `Approval: <what> v<n> | by <email> | <YYYY-MM-DD>`. Designs link to features as **child** items.
+- **Pickup:** only items assigned to `martijn+opencode@atakumi.com` in **Todo**. Set **In Progress** before changing anything; never touch a ticket that is not yours.
+- **Workspace is confirmed, never assumed.** Never infer a workspace from another repo, an old config, or a previous session.
+
+### Links — always clickable
+
+- Base `https://plane.atakumi.net`; workspace `atakumi`, project `BIG` (`94d69d24-1a75-4c5d-874a-3dbdc6a83308`).
+- **Issue list:** `https://plane.atakumi.net/atakumi/projects/94d69d24-1a75-4c5d-874a-3dbdc6a83308/issues/`
+- **Work item:** that path plus `{work-item-uuid}/` — trailing slash is fine. The bare project root 404s, so link the `/issues/` list instead.
+- **Format:** `[BIG-32 — Short title](https://plane.atakumi.net/atakumi/projects/94d69d24-1a75-4c5d-874a-3dbdc6a83308/issues/<work-item-uuid>/)`
+- The work-item UUID is the item's `id` field (`workitem retrieve`, or `retrieve_by_identifier`). The human identifier (`BIG-32`) is not in the URL.
+- Every mention of a work item in a reply carries its link. No link means an incomplete answer.
+
+## Remotes (read before pushing)
+
+| Remote | URL | Use |
+| --- | --- | --- |
+| `atakumi` | `https://github.com/atakumi-global/bigcapital.git` | **Our fork — push here.** `dev` tracks `atakumi/dev`. |
+| `origin` | `https://github.com/bigcapitalhq/bigcapital.git` | Upstream project. **Never push here.** |
+
+Branches are named after their Plane item (`BIG-163-…`). Pull upstream changes
+deliberately, never by accident.
+
 ## Dev setup
+
+- **Node 18.16.1** (`nvm use 18.16.1`) and **pnpm only**.
 
 1. `cp .env.example .env` (root-level env is the canonical one for local dev)
 2. `docker compose up -d` — starts MariaDB (3306), Redis (6379), Gotenberg (9000), Garage/S3 (3900)
